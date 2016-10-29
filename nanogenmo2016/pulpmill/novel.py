@@ -3,7 +3,7 @@ import os, sys
 import tracery
 from tracery.modifiers import base_english
 
-from pulpmill import map
+from pulpmill import world
 
 title_rules = {
     'origin' : ['#a_conflict# #preposition# #desc_context#'],
@@ -25,7 +25,7 @@ class Novel(object):
 
     def generate(self):
 
-        self.map = map.World()
+        self.map = world.World()
         self.map.buildMap()
 
         self.title = self.genTitle()

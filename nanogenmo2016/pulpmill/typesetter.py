@@ -3,7 +3,7 @@ import random
 import utils
 
 from fpdf import FPDF
-import map
+import world
 
 class Typesetter(FPDF):
 
@@ -99,12 +99,12 @@ class Typesetter(FPDF):
         sz2 = sz / 2.0
         for n in worldMap.nodes:
 
-            if n.nodeType == map.TerrainType_LAND:
+            if n.nodeType == world.TerrainType_LAND:
                 col = utils.lerp( (28, 130, 31), (201, 252, 241), n.elevation / 40.0 )
                 self.set_fill_color( *col )
-            elif n.nodeType == map.TerrainType_WATER:
+            elif n.nodeType == world.TerrainType_WATER:
                 self.set_fill_color(72, 120, 196)
-            elif n.nodeType == map.TerrainType_TEMP:
+            elif n.nodeType == world.TerrainType_TEMP:
                 self.set_fill_color( 255, 0, 255)
 
             pp = self.mapToPage( n.pos )
