@@ -20,7 +20,7 @@ import markov
 # From https://www.maxmind.com/en/free-world-cities-database
 CITIES_FILE = "srcdata/worldcitiespop.txt"
 
-cultures = {}
+CULTURES = { }
 
 class Culture(object):
 
@@ -57,7 +57,7 @@ class Culture(object):
         if (len(parts) > 2):
             city = ' '.join(parts[:2])
 
-        return city
+        return city.title()
 
     def genContinentName(self):
         """
@@ -86,7 +86,13 @@ def filterCities( countrycodes ):
         countryCodes[cc] = countryCodes.get(cc, 0) + 1
 
         if (cc in countrycodes):
-            city = lsplit[1]
+
+            try:
+                city = lsplit[1].encode('ascii', 'ignore')
+            except UnicodeDecodeError:
+                #print "BAD", lsplit[1]
+                continue
+
             if not city in result:
 
                 banned = False
@@ -107,11 +113,16 @@ def setupCulture( ident, countrycodes, srccount, depth, ranks=None ):
 
 
     print "Setup Culture : ", ident, "-"*10
-    cachedCulture = os.path.join( 'data', ident+'_culture.p')
+    cachedPlacenames = os.path.join( 'data', ident+'_placenames.json')
 
-    if os.path.exists( cachedCulture ):
-        print "Reading cached culture ", cachedCulture
-        result = pickle.load( open(cachedCulture, 'rb'))
+    if os.path.exists( cachedPlacenames ):
+        print "Reading cached placenames ", cachedPlacenames
+        #result = pickle.load( open(cachedCulture, 'rb'))
+        result = Culture()
+        gen = markov.MarkovGenerator( )
+        gen.loadCached(cachedPlacenames)
+        result.placeNameGenerator = gen
+
     else:
         placeNameSrcList = os.path.join( 'data', ident+'_cities.txt' )
 
@@ -145,21 +156,22 @@ def setupCulture( ident, countrycodes, srccount, depth, ranks=None ):
         result = Culture()
         result.placeNameGenerator = gen
 
-        pickle.dump( result, open(cachedCulture, 'wb' ))
+        #pickle.dump( result, open(cachedCulture, 'wb' ))
+        gen.cache( cachedPlacenames )
 
     # Rank
     if ranks:
         result.ranks = ranks
 
     # Test cities
-    targetNum = 20
-    uniqCount = 0
-    for i in range(targetNum):
-        #city = result.genPlaceName()
-        city = result.genContinentName()
-        print city.title()
+    # targetNum = 20
+    # uniqCount = 0
+    # for i in range(targetNum):
+    #     #city = result.genPlaceName()
+    #     city = result.genContinentName()
+    #     print city.title()
 
-    cultures[ident] = result
+    CULTURES[ident] = result
 
     return result
 
@@ -187,9 +199,12 @@ def setupCultures():
                         ('Watcher', 'Watcher') ] ]
     setupCulture( "island", [ 'ba', 'aw', 'ai', 'bb', 'bm', 'vg', 'ky', 'ht', 'jm', 'kn', 'sc', 'tt', 'tm', 'vi' ],
                    10000, 5 )
-    setupCulture( "spanish", [ 'es', 'mx', 'cr', 'br'], 50000, 5 )
+
+    # Needs more cleanup on input data
+    # setupCulture( "spanish", [ 'es', 'mx', 'cr', 'br'], 50000, 5 )
     setupCulture( "india", [ 'in' ], 50000, 5 )
-    setupCulture( "nordic", [ 'fi', 'se', 'no' ], 50000, 5 )
+
+    setupCulture( "nordic", [ 'fi', 'se', 'no' ], 50000, 4 )
 
 
 

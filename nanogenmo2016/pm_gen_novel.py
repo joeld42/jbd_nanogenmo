@@ -8,18 +8,14 @@ from pulpmill import *
 
 if __name__=='__main__':
 
-    rules = {
-        'origin' : '#hello.capitalize#, #location#!',
-        'hello' : ['hello', 'greetings', 'howdy', 'hey there'],
-        'location' : ['world', 'solar system', 'galaxy', 'universe']
-    }
+    culture.setupCultures()
 
-    grammar = tracery.Grammar( rules )
-    grammar.add_modifiers( base_english )
-    print grammar.flatten( "#origin#")
-
-    novel = novel.Novel()
+    novel = novel.Novel( culture.CULTURES )
     novel.generate()
+
+    # print novel.title
+    # for i in range(20):
+    #     print novel.genTitle()
 
     typesetter = typesetter.Typesetter( novel )
     typesetter.typesetNovel( "novel.pdf")

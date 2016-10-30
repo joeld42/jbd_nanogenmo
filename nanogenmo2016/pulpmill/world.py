@@ -52,6 +52,10 @@ TerrainType_LAND = "land"
 TerrainType_WATER = "water"
 TerrainType_TEMP = "TEMP"
 
+kingdom_colors = [ (105,112,55), (184,138,83), (213,183,32),
+                   (27,63,100), (80,134,149) ]
+
+
 def dist( pA, pB ):
 
     return math.sqrt( ((pA[0] - pB[0])**2) + ((pA[1] - pB[1])**2) )
@@ -70,32 +74,59 @@ class CountEdge(object):
             return True
         return False
 
-
 # World-building stuff
+class City( object ):
+
+    def __init__(self, kingdom, node ):
+        self.kingdom = kingdom
+        self.name = kingdom.culture.genPlaceName()
+        self.node = node
+
 class TerrainNode(object):
 
     def __init__(self):
 
         self.nodeType = TerrainType_LAND
-        self.pos = ( random.uniform( 10, (MAP_SIZE[0] - 10)),
-                     random.uniform( 10, (MAP_SIZE[1] - 10)))
+        # self.pos = ( random.uniform( 10, (MAP_SIZE[0] - 10)),
+        #               random.uniform( 10, (MAP_SIZE[1] - 10)))
+
+        self.pos = (random.uniform( 0, MAP_SIZE[0]),
+                    random.uniform( 1, MAP_SIZE[1]) )
 
         self.elevation = 40.0
         self.cell = []
+        self.adj = []
+        self.kingdom = None
+
+        self.city = None
 
 class Kingdom(object):
 
     def __init__(self, culture ):
-
         self.culture = culture
+
+        self.capital = None
+        self.center = ( 0, 0 )
+        self.nodeCount = 0
+
+        self.name = culture.genContinentName()
+
+        if len(kingdom_colors):
+            self.color = random.choice( kingdom_colors )
+            kingdom_colors.remove( self.color )
+        else:
+            self.color = ( random.randint( 50, 255 ),
+                           random.randint( 50, 255 ),
+                           random.randint( 50, 255 ) )
 
 class World(object):
 
-    def __init__(self):
+    def __init__(self, cultures):
 
         self.worldname = 'Test World'
         self.daylength = datetime.timedelta( hours = random.randint( 20, 35 ) )
         self.size = MAP_SIZE
+        self.cultures = cultures
 
         self.nodes = []
 
@@ -103,18 +134,23 @@ class World(object):
 
         self.kingdoms = []
 
+
+
     def buildMap(self):
 
-        numExclusionZones = random.randint(1,5)
-        exclusionArea = 50.0 / numExclusionZones
-        exclusionZones = []
-        for zi in range(numExclusionZones):
-            zone = (random.uniform( 0.0, 100.0 ),
-                    random.uniform( 0.0,100.0 ),
-                    random.uniform( 0.1,exclusionArea ) )
-            exclusionZones.append( zone )
 
-        targNodes = 150
+        exclusionZones = []
+        if 0:
+            numExclusionZones = random.randint(1,5)
+            exclusionArea = 50.0 / numExclusionZones
+
+            for zi in range(numExclusionZones):
+                zone = (random.uniform( 0.0, 100.0 ),
+                        random.uniform( 0.0,100.0 ),
+                        random.uniform( 0.1,exclusionArea ) )
+                exclusionZones.append( zone )
+
+        targNodes = 200
         while (len(self.nodes) < targNodes):
 
             n = TerrainNode()
@@ -138,8 +174,9 @@ class World(object):
 
         # Add build nodes on the corners
         doneNodes = []
-        for tpos in [ (0.0, 0.0), (self.size[0], 0.0),
-                      (0.0, self.size[1]), (self.size[0], self.size[1])]:
+        padSz = 20.0
+        for tpos in [ (-padSz, -padSz), (self.size[0] + padSz, -padSz),
+                      (-padSz, self.size[1] + padSz ), (self.size[0] + padSz, self.size[1] + padSz)]:
             n = TerrainNode()
             n.pos = tpos
             n.nodeType = TerrainType_TEMP
@@ -178,20 +215,82 @@ class World(object):
 
 
         # assign elevations and water
-        # TODO random now
-        for n in self.nodes:
-            n.elevation = random.uniform( 0.0, 40.0 )
-            if (n.elevation > 20.0):
-                n.nodeType = TerrainType_WATER
+        self.genTerrain()
+
+        # Calculate Adjacency
+        self.buildAdjacent()
 
         # Assign some kingdoms
-        # numKingdoms = random.randint( 2, 5 )
-        # for i in range(numKingdoms):
-        #     kingdom = Kingdom( culture )
+        cultureIds = self.cultures.keys()
+
+        landNodes = self.getLandNodes()
+
+        numKingdoms = random.randint( 2, 5 )
+        for i in range(numKingdoms):
+
+            cid = random.choice( cultureIds )
+            cultureIds.remove( cid )
+
+            culture = self.cultures[cid]
+            kingdom = Kingdom( culture )
+
+            capitalNode = random.choice( landNodes )
+            landNodes.remove( capitalNode )
+
+            capital = City( kingdom, capitalNode )
+            kingdom.capital = capital
+            capitalNode.kingdom = kingdom
+            capitalNode.city = capital
+
+            print "Capital city: ", capital.name
+
+            self.kingdoms.append( kingdom )
+
+        # propagate kingdoms:
+        while 1:
+            didChange = False
+            for n in self.nodes:
+
+                if n.kingdom:
+                    for n2 in n.adj:
+                        if n.nodeType==TerrainType_LAND and not n2.kingdom:
+                            n2.kingdom = n.kingdom
+                            didChange = True
+
+            if not didChange:
+                break
+
+        # Make some more cities
+        numMoreCities = 10
+        landNodes = self.getLandNodes()
+        random.shuffle(landNodes)
+        for n in landNodes[:numMoreCities]:
+            cc = City( kingdom, n )
+            n.city = cc
+
+        # get kingdom averages
+        for n in self.getLandNodes():
+            if n.kingdom:
+                k = n.kingdom
+                k.center = (k.center[0] + n.pos[0], k.center[1] + n.pos[1] )
+                k.nodeCount += 1
+
+        for k in self.kingdoms:
+            if k.nodeCount > 0:
+                k.center = (k.center[0] / k.nodeCount, k.center[1] / k.nodeCount )
 
         self.calcTriangleCenters()
 
         self.calcTerrainCells()
+
+    def getLandNodes(self):
+
+        landNodes = []
+        for n in self.nodes:
+            if n.nodeType == TerrainType_LAND and not n.city:
+                landNodes.append( n )
+
+        return landNodes
 
     def countEdge(self, a, b):
 
@@ -222,7 +321,59 @@ class World(object):
 
             # sort by angle
             cellPoints.sort()
-            n.cell = map( lambda x: (x[1], x[2]), cellPoints )
+            n.cell = map( lambda x: self.clamp( (x[1], x[2]) ), cellPoints )
+
+    def clamp(self, p ):
+        return ( min( MAP_SIZE[0], max( p[0], 0.0 ) ),
+                 min( MAP_SIZE[1], max( p[1], 0.0 ) ) )
+
+    def buildAdjacent(self):
+
+        for n in self.nodes:
+
+            adj = set()
+            for t in self.mapTris:
+                if t.a==n or t.b==n or t.c==n:
+
+                    for n2 in [t.a, t.b, t.c]:
+                        if n2 != n:
+                            adj.add( n2 )
+
+            n.adj = adj
+
+    def genTerrain(self):
+
+        for n in self.nodes:
+            n.elevation = 20.0
+
+        # use the "fault line offset" method to generate terrain
+        # because it's super simple and we just need coarse elevation
+        numIters = 100
+        for i in range(numIters):
+
+            # Choose a line at random across the map
+            pA = ( random.uniform( 0.0, self.size[0]), random.uniform( 0.0, self.size[1]) )
+            pB = ( random.uniform( 0.0, self.size[0]), random.uniform( 0.0, self.size[1]) )
+
+            for n in self.nodes:
+                d = ((pB[0] - pA[0]) * (n.pos[1] - pA[1])) - ((pB[1] - pA[1]) * (n.pos[0] - pA[0]))
+                if ( d < 0.0):
+                    n.elevation += 1.0
+                else:
+                    n.elevation -= 1.0
+
+        minElev = 99999.0
+        maxElev = 0.0
+        for n in self.nodes:
+            minElev = min( n.elevation, minElev )
+            maxElev = max( n.elevation, maxElev )
+
+        for n in self.nodes:
+            n.elevation = (n.elevation - minElev) / (maxElev - minElev)
+            n.elevation *= 40.0
+
+            if (n.elevation < 20.0):
+                 n.nodeType = TerrainType_WATER
 
 
     def dbgPrint(self):

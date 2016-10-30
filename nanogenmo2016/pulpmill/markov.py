@@ -2,6 +2,7 @@ import os, sys, string
 import random
 import utils
 import pickle
+import json
 
 STARTMARKER = '*START*'
 ENDMARKER = '*END*'
@@ -12,6 +13,22 @@ class MarkovGenerator(object):
 
         self.depth = depth
         self.weights = weights
+
+    def cache(self, cacheFile ):
+
+        data = {
+            'depth' : self.depth,
+            'weights' : self.weights
+        }
+
+        with open(cacheFile, 'w') as outfile:
+            json.dump(data, outfile)
+
+    def loadCached(self, cacheFile ):
+        with open( cacheFile ) as datafile:
+            data = json.load(datafile)
+            self.depth = data['depth']
+            self.weights = data ['weights']
 
     def trainOne(self, sequence):
 
@@ -28,7 +45,7 @@ class MarkovGenerator(object):
 
             if len(seq):
                 nextItem = seq[0]
-                priorKey = tuple(currPrior)
+                priorKey = ':'.join(currPrior)
 
                 if not self.weights.has_key(priorKey):
                     self.weights[priorKey] = {}
@@ -65,7 +82,8 @@ class MarkovGenerator(object):
         prior = tuple([ STARTMARKER ] * self.depth )
 
         while 1:
-            wgts = self.weights[prior]
+            priorkey = ':'.join(prior)
+            wgts = self.weights[priorkey]
 
 
             #item = random.choice( wgts.keys() )
