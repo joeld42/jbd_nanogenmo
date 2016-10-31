@@ -121,6 +121,8 @@ class Typesetter(FPDF):
             elif n.nodeType == world.TerrainType_WATER:
                 #self.set_fill_color(72, 120, 196)
                 continue
+            elif n.nodeType == world.TerrainType_LAKE:
+                self.set_fill_color(91, 146, 234)
             elif n.nodeType == world.TerrainType_TEMP:
                 self.set_fill_color( 255, 0, 255)
 
@@ -140,6 +142,8 @@ class Typesetter(FPDF):
 
             if arc.arcType == world.TerrainArc_ROAD:
                 self.set_draw_color(160, 117, 0)
+            elif arc.arcType == world.TerrainArc_SEA:
+                self.set_draw_color(0, 226, 247)
             else:
                 self.set_draw_color( 255, 0, 0 )
 

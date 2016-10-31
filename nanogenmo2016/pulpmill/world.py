@@ -49,7 +49,8 @@ class TerrainTri(object):
 
 
 TerrainType_LAND = "land"
-TerrainType_WATER = "water"
+TerrainType_WATER = "water" # ocean water
+TerrainType_LAKE = "lake"
 TerrainType_TEMP = "TEMP"
 
 TerrainArc_ROAD = "road"  # A road or path
@@ -124,6 +125,9 @@ class TerrainNode(object):
         self.kingdom = None
 
         self.city = None
+
+        # Temps used for traversals
+        self.visited = False
 
 class Kingdom(object):
 
@@ -245,6 +249,9 @@ class World(object):
         # Calculate Adjacency
         self.buildAdjacent()
 
+        # Find Lakes
+        self.findLakes()
+
         # Assign some kingdoms
         cultureIds = self.cultures.keys()
 
@@ -296,6 +303,9 @@ class World(object):
         # Make some port cities
         self.addPortCities()
 
+        # Add sea lanes
+        self.addSeaLanes()
+
         # get kingdom averages
         for n in self.getLandNodes():
             if n.kingdom:
@@ -310,6 +320,42 @@ class World(object):
         self.calcTriangleCenters()
 
         self.calcTerrainCells()
+
+    def clearVisited(self):
+        for n in self.nodes:
+            n.visited = False
+
+    def getConnectedWater(self, n, nlist ):
+
+        n.visited = True
+        nlist.append( n )
+        for n2 in n.adj:
+            if (not n2.visited) and n2.nodeType == TerrainType_WATER:
+                self.getConnectedWater( n2, nlist )
+
+        return nlist
+
+    def findLakes(self):
+
+        self.clearVisited()
+
+        for n in self.nodes:
+
+            if (not n.visited) and n.nodeType == TerrainType_WATER:
+
+                # Check if n is a lake
+                waterNodes = self.getConnectedWater( n, [] )
+                if len(waterNodes) <= 4:
+                    for wn in waterNodes:
+                        n.nodeType = TerrainType_LAKE
+
+        # clean up all the lake nodes
+        for n in self.nodes:
+            if n.nodeType==TerrainType_LAKE:
+                n.adj=[]
+            else:
+                n.adj = filter( lambda x: not x.nodeType == TerrainType_LAKE, n.adj )
+
 
     def getLandNodes(self):
 
@@ -392,9 +438,9 @@ class World(object):
             foundArc = None
             for n2 in n.adj:
 
-                for a in self.arcs:
-                    if a.match( n, n2 ):
-                        foundArc = a
+                for arc in self.arcs:
+                    if arc.match( n, n2 ):
+                        foundArc = arc
                         break
 
                 if not foundArc:
@@ -402,10 +448,64 @@ class World(object):
                             n2.nodeType == TerrainType_LAND):
                         self.arcs.append( TerrainArc( n, n2) )
 
+
+    def isReachable(self, targ, curr, travelType ):
+        """Note must clearVisited first"""
+        curr.visited = True
+        for n2 in curr.adj:
+
+            if n2==targ:
+                return True
+
+            # Only travel on travelType
+            if not n2.visited and n2.nodeType==travelType:
+                if self.isReachable( targ, n2, travelType ):
+                    return True
+
+        return False
+
+
+    def addSeaLanes(self):
+
+        # Put arcs between all port cities
+        portCities = []
+        for n in self.nodes:
+            if n.city and n.city.port:
+                portCities.append( n )
+
+        for p in portCities:
+            for p2 in portCities:
+                if p==p2:
+                    continue
+
+                self.clearVisited()
+                if self.isReachable( p2, p, TerrainType_WATER ):
+                    #print "Adding sea lane from ", p.city.name, " --> ",p2.city.name
+                    arc = self.addArc( p, p2 )
+                    arc.arcType = TerrainArc_SEA
+
+    def addArc(self, a, b ):
+        for arc in self.arcs:
+            if arc.match( a, b ):
+                return arc
+
+        arc = TerrainArc( a, b )
+        self.arcs.append( arc )
+
+        return arc
+
     def addPortCities(self):
 
-        # Make some more cities
+        # First mark any cities near water as port
+        for n in self.nodes:
+            if n.city:
+                for n2 in n.adj:
+                    if n2.nodeType == TerrainType_WATER:
+                        #print "Marking", n.city.name, "as Port"
+                        n.city.port = True
+                        break
 
+        # Make some more cities
         coastalNodes = self.getEmptyCoastalNodes()
         random.shuffle(coastalNodes)
 
@@ -421,12 +521,12 @@ class World(object):
             else:
                 numMoreCities = int(numCoastals * 0.1)
 
-            print "Kingdom", k.name, "has", len(kingdomCoastals), "coastal lands, adding", numMoreCities, "port cities"
+            #print "Kingdom", k.name, "has", len(kingdomCoastals), "coastal lands, adding", numMoreCities, "port cities"
 
             for n in kingdomCoastals[:numMoreCities]:
                 cc = City( k, n, port=True )
                 n.city = cc
-                print "  Added", cc.name
+                #print "  Added", cc.name
 
     def genTerrain(self):
 
