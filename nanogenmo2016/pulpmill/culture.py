@@ -1,7 +1,8 @@
 import os, sys
 import string
 import random
-import pickle
+import tracery
+from tracery.modifiers import base_english
 
 import markov
 
@@ -21,6 +22,14 @@ import markov
 CITIES_FILE = "srcdata/worldcitiespop.txt"
 
 CULTURES = { }
+
+PORT_RULES = {
+    "origin" : ['$PP', '#portname#', '#featurename#' ],
+    "portname" : ['Port $PP', '$PP Harbour', '#minorport#' ],
+    "minorport" : ['$PP Landing', '$PP Docks'],
+    "featurename" : ['$PP Cove', '$PP Bay', '$PP Beach']
+}
+
 
 class Culture(object):
 
@@ -70,6 +79,22 @@ class Culture(object):
             parts = string.split( candidate )
             if (len(parts)==1) and len(candidate) < 10:
                 return candidate
+
+    def genPortCityName(self):
+
+        # TODO: make better and more culturaly difference
+        baseName = None
+        while not baseName:
+            baseName = self.genPlaceName()
+            if len(baseName) > 10:
+                baseName = None
+
+        grammar = tracery.Grammar( PORT_RULES )
+        grammar.add_modifiers( base_english )
+        title = grammar.flatten( "#origin#")
+        portName = string.replace( title, "$PP", baseName ).title()
+
+        return portName
 
 # Block some frequent, modern words, or weird data in the src data
 BANNED_WORDS = ['mobile home', 'trailer', 'condominium', 'subdivision', 'addition', '9zenic',

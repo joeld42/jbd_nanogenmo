@@ -132,31 +132,44 @@ class Typesetter(FPDF):
             # self.ellipse( pp[0]-sz2, pp[1]-sz2,
             #               sz, sz, style='DF' )
 
+        # Draw arcs
+        for arc in worldMap.arcs:
 
-            # City Names
-            self.set_text_color( 0 )
-            for n in worldMap.nodes:
-                if n.city:
-                    city = n.city
-                    pp = self.mapToPage( n.pos )
+            ppA = self.mapToPage( arc.a.pos )
+            ppB = self.mapToPage( arc.b.pos )
 
-                    self.set_xy( pp[0], pp[1] - 3)
+            if arc.arcType == world.TerrainArc_ROAD:
+                self.set_draw_color(160, 117, 0)
+            else:
+                self.set_draw_color( 255, 0, 0 )
 
-                    if city == city.kingdom.capital:
-                        self.set_font('Arial', 'B', 7)
-                        self.set_fill_color( 255 )
-                        self.set_draw_color( 0 )
-                        sz = 2.0
-                    else:
-                        self.set_font('Arial', 'I', 6)
-                        self.set_fill_color( 0 )
-                        self.set_draw_color( 0 )
-                        sz = 1.0
+            self.line( ppA[0], ppA[1], ppB[0], ppB[1] )
 
-                    sz2 = sz /2.0
-                    self.ellipse( pp[0]-sz2, pp[1]-sz2,
-                                  sz, sz, style='DF' )
-                    self.cell( 100, 8, city.name )
+
+        # City Names
+        self.set_text_color( 0 )
+        for n in worldMap.nodes:
+            if n.city:
+                city = n.city
+                pp = self.mapToPage( n.pos )
+
+                self.set_xy( pp[0], pp[1] - 4)
+
+                if city == city.kingdom.capital:
+                    self.set_font('Arial', 'B', 7)
+                    self.set_fill_color( 255 )
+                    self.set_draw_color( 0 )
+                    sz = 2.0
+                else:
+                    self.set_font('Arial', 'I', 6)
+                    self.set_fill_color( 0 )
+                    self.set_draw_color( 0 )
+                    sz = 1.0
+
+                sz2 = sz /2.0
+                self.ellipse( pp[0]-sz2, pp[1]-sz2,
+                              sz, sz, style='DF' )
+                self.cell( 100, 8, city.name )
 
             # Kingdom Names
             # FIXME: get width and center properly

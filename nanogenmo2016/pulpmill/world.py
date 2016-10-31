@@ -52,6 +52,10 @@ TerrainType_LAND = "land"
 TerrainType_WATER = "water"
 TerrainType_TEMP = "TEMP"
 
+TerrainArc_ROAD = "road"  # A road or path
+TerrainArc_SEA = "sea"  # A sea voyage
+TerrainArc_QUEST = "quest" # e.g. mirkwood or moria
+
 kingdom_colors = [ (105,112,55), (184,138,83), (213,183,32),
                    (27,63,100), (80,134,149) ]
 
@@ -77,10 +81,31 @@ class CountEdge(object):
 # World-building stuff
 class City( object ):
 
-    def __init__(self, kingdom, node ):
+    def __init__(self, kingdom, node, port=False ):
         self.kingdom = kingdom
-        self.name = kingdom.culture.genPlaceName()
+
+        if port:
+            self.name = kingdom.culture.genPortCityName()
+        else:
+            self.name = kingdom.culture.genPlaceName()
         self.node = node
+        self.port = port
+
+class TerrainArc(object):
+
+    def __init__(self, a, b ):
+
+        self.a = a
+        self.b = b
+        self.arcType = TerrainArc_ROAD
+
+    def match(self, a, b ):
+        if ( (a==self.a and b==self.b) or
+             (b==self.a and a==self.b)):
+            return True
+        else:
+            return False
+
 
 class TerrainNode(object):
 
@@ -133,7 +158,7 @@ class World(object):
         self.mapTris = []
 
         self.kingdoms = []
-
+        self.arcs = [] # Like roads or sea routes
 
 
     def buildMap(self):
@@ -268,6 +293,9 @@ class World(object):
             cc = City( kingdom, n )
             n.city = cc
 
+        # Make some port cities
+        self.addPortCities()
+
         # get kingdom averages
         for n in self.getLandNodes():
             if n.kingdom:
@@ -289,6 +317,25 @@ class World(object):
         for n in self.nodes:
             if n.nodeType == TerrainType_LAND and not n.city:
                 landNodes.append( n )
+
+        return landNodes
+
+    def getEmptyCoastalNodes(self):
+
+        landNodes = []
+        for n in self.nodes:
+            if n.nodeType == TerrainType_LAND and not n.city:
+
+                # See if there's water adjacent
+                # FIXME: move this to TerainNode
+                hasWater = False
+                for n2 in n.adj:
+                    if (n2.nodeType == TerrainType_WATER):
+                        hasWater = True
+                        break
+
+                if hasWater:
+                    landNodes.append( n )
 
         return landNodes
 
@@ -340,6 +387,46 @@ class World(object):
                             adj.add( n2 )
 
             n.adj = adj
+
+            # also add arcs
+            foundArc = None
+            for n2 in n.adj:
+
+                for a in self.arcs:
+                    if a.match( n, n2 ):
+                        foundArc = a
+                        break
+
+                if not foundArc:
+                    if (n.nodeType == TerrainType_LAND and
+                            n2.nodeType == TerrainType_LAND):
+                        self.arcs.append( TerrainArc( n, n2) )
+
+    def addPortCities(self):
+
+        # Make some more cities
+
+        coastalNodes = self.getEmptyCoastalNodes()
+        random.shuffle(coastalNodes)
+
+        for k in self.kingdoms:
+
+            kingdomCoastals = filter( lambda x: x.kingdom==k, coastalNodes )
+
+            numCoastals = len(kingdomCoastals)
+            if (numCoastals <=4):
+                numMoreCities = 1
+            elif (numCoastals <= 20):
+                numMoreCities = 2
+            else:
+                numMoreCities = int(numCoastals * 0.1)
+
+            print "Kingdom", k.name, "has", len(kingdomCoastals), "coastal lands, adding", numMoreCities, "port cities"
+
+            for n in kingdomCoastals[:numMoreCities]:
+                cc = City( k, n, port=True )
+                n.city = cc
+                print "  Added", cc.name
 
     def genTerrain(self):
 
