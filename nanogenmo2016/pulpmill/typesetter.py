@@ -135,19 +135,22 @@ class Typesetter(FPDF):
             #               sz, sz, style='DF' )
 
         # Draw arcs
-        for arc in worldMap.arcs:
+        doDrawArcs = True
+        if doDrawArcs:
+            for arc in worldMap.arcs:
 
-            ppA = self.mapToPage( arc.a.pos )
-            ppB = self.mapToPage( arc.b.pos )
+                ppA = self.mapToPage( arc.a.pos )
+                ppB = self.mapToPage( arc.b.pos )
 
-            if arc.arcType == world.TerrainArc_ROAD:
-                self.set_draw_color(160, 117, 0)
-            elif arc.arcType == world.TerrainArc_SEA:
-                self.set_draw_color(0, 226, 247)
-            else:
-                self.set_draw_color( 255, 0, 0 )
+                if arc.arcType == world.TerrainArc_ROAD:
+                    self.set_draw_color(160, 117, 0)
+                elif arc.arcType == world.TerrainArc_SEA:
+                    self.set_draw_color(0, 226, 247)
+                else:
+                    self.set_draw_color( 255, 0, 0 )
 
-            self.line( ppA[0], ppA[1], ppB[0], ppB[1] )
+                self.line( ppA[0], ppA[1], ppB[0], ppB[1] )
+
 
 
         # City Names

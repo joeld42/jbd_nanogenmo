@@ -57,6 +57,7 @@ TerrainArc_ROAD = "road"  # A road or path
 TerrainArc_SEA = "sea"  # A sea voyage
 TerrainArc_QUEST = "quest" # e.g. mirkwood or moria
 
+
 kingdom_colors = [ (105,112,55), (184,138,83), (213,183,32),
                    (27,63,100), (80,134,149) ]
 
@@ -82,15 +83,21 @@ class CountEdge(object):
 # World-building stuff
 class City( object ):
 
-    def __init__(self, kingdom, node, port=False ):
+    def __init__(self, kingdom, node, port=False, dungeon=False ):
         self.kingdom = kingdom
 
         if port:
             self.name = kingdom.culture.genPortCityName()
+        elif dungeon:
+            # TODO: Generate dungeon
+            self.name = "DUNGEON"
         else:
             self.name = kingdom.culture.genPlaceName()
+
         self.node = node
+
         self.port = port
+        self.dungeon = dungeon
 
 class TerrainArc(object):
 
@@ -106,6 +113,14 @@ class TerrainArc(object):
             return True
         else:
             return False
+
+    def other(self, n):
+        assert (n==self.a or n==self.b)
+        if n==self.a:
+            return self.b
+        else:
+            return self.a
+
 
 
 class TerrainNode(object):
@@ -128,6 +143,11 @@ class TerrainNode(object):
 
         # Temps used for traversals
         self.visited = False
+
+    def isDeadEnd(self):
+
+        return not self.city and self.nodeType == TerrainType_LAND and (len(self.arcs)==1)
+
 
 class Kingdom(object):
 
@@ -306,6 +326,15 @@ class World(object):
         # Add sea lanes
         self.addSeaLanes()
 
+        # Build arc lists
+        self.buildNodeArcs()
+
+        # Prune roads
+        self.pruneRoads()
+
+        # Add dungeons and clean up dead ends
+        self.addDungeons()
+
         # get kingdom averages
         for n in self.getLandNodes():
             if n.kingdom:
@@ -334,6 +363,41 @@ class World(object):
                 self.getConnectedWater( n2, nlist )
 
         return nlist
+
+    def buildNodeArcs(self):
+
+        for n in self.nodes:
+            n.arcs = []
+            for arc in self.arcs:
+                if arc.a == n or arc.b==n:
+                    n.arcs.append( arc )
+
+    def addDungeons(self):
+
+        # Find all the dead-end arcs
+        deadEnds = self.findDeadEnds()
+
+        # Make the first few of them dungeons
+        numDungeons = min( len(deadEnds), random.randint( 3, 6) )
+        for d in deadEnds[:numDungeons]:
+        #for d in deadEnds:
+            cc = City( d.kingdom, d, dungeon=True )
+            d.city = cc
+            print "Added dungeon..."
+
+        # Remove all other dead-ends until there are none
+        while 1:
+            deadEnds = self.findDeadEnds()
+            if len(deadEnds) == 0:
+                break
+            else:
+                print "Trimming ", len(deadEnds), "dead ends"
+
+            for d in deadEnds:
+                self.removeArc( d.arcs[0] )
+
+    def findDeadEnds(self):
+        return filter( lambda x: x.isDeadEnd(), self.nodes )
 
     def findLakes(self):
 
@@ -365,6 +429,62 @@ class World(object):
                 landNodes.append( n )
 
         return landNodes
+
+    def removeArc(self, arc ):
+        arc.a.arcs.remove( arc )
+        arc.b.arcs.remove( arc )
+        self.arcs.remove( arc )
+
+    def pruneRoads(self):
+
+        print "PruneRoads..."
+        iterCount = 500
+        origVisitable = self.countVisitableIfArcRemoved( None )
+
+        print "origVisitable ", origVisitable
+
+        roads = filter( lambda x: x.arcType==TerrainArc_ROAD, self.arcs )
+        for i in xrange(iterCount):
+
+
+            checkArc = random.choice( roads )
+            count2 = self.countVisitableIfArcRemoved( checkArc )
+
+            if count2 == origVisitable:
+                print "Removing arc, count unchanged", origVisitable
+                self.removeArc( checkArc )
+                roads.remove( checkArc)
+            else:
+                print "Check arc failed, count is", count2, "continuing"
+
+    def countVisitableIfArcRemoved(self, arc ):
+
+        # Pick a random city to start
+        for startNode in self.nodes:
+            if startNode.city:
+                break
+
+        self.clearVisited()
+        self._doCountVisited( startNode, arc )
+
+        count = 0
+        for n in self.nodes:
+            if n.visited:
+                count += 1
+
+        return count
+
+    def _doCountVisited(self, curr, removeArc ):
+
+        curr.visited = True
+
+        for arc in curr.arcs:
+            n2 = arc.other(curr)
+            if not n2.visited:
+                if not removeArc or (not removeArc==arc):
+                    self._doCountVisited( n2, removeArc )
+
+
 
     def getEmptyCoastalNodes(self):
 
