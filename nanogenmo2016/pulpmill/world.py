@@ -89,8 +89,8 @@ class City( object ):
         if port:
             self.name = kingdom.culture.genPortCityName()
         elif dungeon:
-            # TODO: Generate dungeon
-            self.name = "DUNGEON"
+            # Generate dungeon
+            self.name = kingdom.culture.genDungeonName()
         else:
             self.name = kingdom.culture.genPlaceName()
 
@@ -420,6 +420,7 @@ class World(object):
 
         cities = filter( lambda n: n.city and n.nodeType==TerrainType_LAND and not n.city.dungeon and len(n.arcs)>1, self.nodes )
 
+        retryCount = 0
         while 1:
             startCity = random.choice( cities )
             print "MakestoryPath: start/end in ", startCity.city.name, "storyDungeons", storyDungeons
@@ -430,6 +431,11 @@ class World(object):
             storyPath = self.findStoryPath( startCity, startCity, storyDungeons, [] )
 
             if storyPath and storyPath[0]:
+                retryCount += 1
+                if retryCount > 3 and storyDungeons > 2:
+                    # Try fewer dungeons if this is too hard
+                    storyDungeons -= 1
+
                 break
 
         # Close path
@@ -586,7 +592,7 @@ class World(object):
     def pruneRoads(self):
 
         print "PruneRoads..."
-        iterCount = 100
+        iterCount = 500
         origVisitable = self.countVisitableIfArcRemoved( None )
 
         print "origVisitable ", origVisitable

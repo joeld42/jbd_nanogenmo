@@ -30,6 +30,18 @@ PORT_RULES = {
     "featurename" : ['$PP Cove', '$PP Bay', '$PP Beach']
 }
 
+DUNGEON_RULES = {
+    "origin" : ['#building#', '#evocative#' ],
+    "somebody" : ['$PP', '#creature#'],
+    "creature" : ["dragon", "witch", "knight", "orc", "king", "wizard" ],
+    "building" : [ "#bad##place#", "the #bad##place#", "#creature# #place#"  ],
+    "bad" : [ "foul", "dread", "dire", "krak", "$PP", "dragon", "witch", "frost", "blood" ],
+    "place" : [ "fort", "keep", "hold", "fast", "spire", "spike", "tomb", "cave", "gloss", "hollow", "tower" ],
+    "evocative" : ["#somebody#'s #bodypart#", "#somebody#'s #downfall#", "ruins of $PP"],
+    "bodypart" : ["eye", "knee", "crown", "ear" ],
+    "downfall" : ["end", "bane", "tomb", "lament", "ruin" ],
+}
+
 
 class Culture(object):
 
@@ -45,6 +57,22 @@ class Culture(object):
                         ('Earl', 'Countess'),
                         ('Viscount', 'Viscountess'),
                         ('Baron', 'Baroness') ] ]
+
+    def title2(self, s):
+        # like title() but better
+        s2 = []
+        for p in string.split(s,' '):
+
+            if not p in ["on", "of", "a", "the", "to"]:
+                p = p.capitalize()
+
+            s2.append(p)
+
+        # Always cap the first word
+        s2[0] = s2[0].capitalize()
+
+        return ' '.join(s2)
+
 
     def genPlaceName(self):
 
@@ -66,7 +94,7 @@ class Culture(object):
         if (len(parts) > 2):
             city = ' '.join(parts[:2])
 
-        return city.title()
+        return self.title2(city)
 
     def genContinentName(self):
         """
@@ -80,21 +108,36 @@ class Culture(object):
             if (len(parts)==1) and len(candidate) < 10:
                 return candidate
 
-    def genPortCityName(self):
-
-        # TODO: make better and more culturaly difference
+    def genNameWithMinMaxLength(self, minLen, maxLen ):
         baseName = None
         while not baseName:
             baseName = self.genPlaceName()
-            if len(baseName) > 10:
+            if len(baseName) > maxLen or len(baseName) < minLen:
                 baseName = None
+
+        return baseName
+
+    def genPortCityName(self):
+
+        # TODO: make better and more culturaly difference
+        baseName = self.genNameWithMinMaxLength( 2, 10 )
 
         grammar = tracery.Grammar( PORT_RULES )
         grammar.add_modifiers( base_english )
         title = grammar.flatten( "#origin#")
-        portName = string.replace( title, "$PP", baseName ).title()
+        portName = string.replace( title, "$PP", baseName )
 
-        return portName
+        return self.title2(portName)
+
+    def genDungeonName(self):
+        # TODO: generate more than just name here
+        baseName = self.genNameWithMinMaxLength( 2, 10 )
+        grammar = tracery.Grammar( DUNGEON_RULES )
+        grammar.add_modifiers( base_english )
+        title = grammar.flatten( "#origin#")
+        dungeonName = string.replace( title, "$PP", baseName )
+
+        return self.title2(dungeonName)
 
 # Block some frequent, modern words, or weird data in the src data
 BANNED_WORDS = ['mobile home', 'trailer', 'condominium', 'subdivision', 'addition', '9zenic',

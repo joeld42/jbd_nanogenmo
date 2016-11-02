@@ -5,6 +5,8 @@ from tracery.modifiers import base_english
 
 from pulpmill import world
 
+
+
 title_rules = {
     'origin' : ['#a_conflict# #preposition# #desc_context#', '#a_and_b#',
                 'the #desc_context#'],
