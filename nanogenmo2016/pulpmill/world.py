@@ -106,6 +106,7 @@ class TerrainArc(object):
         self.a = a
         self.b = b
         self.arcType = TerrainArc_ROAD
+        self.onStoryPath = False
 
     def match(self, a, b ):
         if ( (a==self.a and b==self.b) or
@@ -120,6 +121,16 @@ class TerrainArc(object):
             return self.b
         else:
             return self.a
+
+    def __str__(self):
+
+        if self.arcType == TerrainArc_ROAD:
+            desc="Road"
+        elif self.arcType == TerrainArc_SEA:
+            desc="Sea"
+        else:
+            desc=""
+        return "<TerrainArc(%s)>" % desc
 
 
 
@@ -145,9 +156,24 @@ class TerrainNode(object):
         self.visited = False
 
     def isDeadEnd(self):
-
         return not self.city and self.nodeType == TerrainType_LAND and (len(self.arcs)==1)
 
+    def __str__(self):
+
+        desc = self.nodeType
+
+        if self.city:
+            desc += " " + self.city.name
+            attrs = []
+            if self.city.port:
+                attrs.append( "Port" )
+            if self.city.dungeon:
+                attrs.append("Dungeon")
+
+            if attrs:
+                desc += " (%s)" % ",".join(attrs)
+
+        return '<TerrainNode: %s>' % desc
 
 class Kingdom(object):
 
@@ -329,11 +355,13 @@ class World(object):
         # Build arc lists
         self.buildNodeArcs()
 
-        # Prune roads
-        self.pruneRoads()
-
         # Add dungeons and clean up dead ends
-        self.addDungeons()
+        #self.addDungeons()
+        self.makeStoryPath()
+
+        # Prune roads and dead ends
+        self.pruneRoads()
+        self.removeDeadEnds()
 
         # get kingdom averages
         for n in self.getLandNodes():
@@ -372,18 +400,138 @@ class World(object):
                 if arc.a == n or arc.b==n:
                     n.arcs.append( arc )
 
-    def addDungeons(self):
+    def makeStoryPath(self):
+
+        numDungeons = random.randint( len(self.kingdoms), len(self.kingdoms)*2  )
+        for ndx in xrange(numDungeons):
+            k = self.kingdoms[ ndx % len(self.kingdoms)]
+
+            dungeonPlaces = filter( lambda n: n.city and n.nodeType == TerrainType_LAND and (len(n.arcs)>1) and n.kingdom == k,
+                                    self.nodes )
+
+            print "Make story path adding dungeon"
+            d = random.choice( dungeonPlaces )
+            cc = City( d.kingdom, d, dungeon=True )
+            d.city = cc
+
+        # Max dungeons in our novel
+        maxDungeons = 3
+        storyDungeons = min( numDungeons, maxDungeons )
+
+        cities = filter( lambda n: n.city and n.nodeType==TerrainType_LAND and not n.city.dungeon and len(n.arcs)>1, self.nodes )
+
+        while 1:
+            startCity = random.choice( cities )
+            print "MakestoryPath: start/end in ", startCity.city.name, "storyDungeons", storyDungeons
+
+            self.clearVisited()
+            self.dbg_bestSoFar = 999
+            self.dbg_count = 0
+            storyPath = self.findStoryPath( startCity, startCity, storyDungeons, [] )
+
+            if storyPath and storyPath[0]:
+                break
+
+        # Close path
+        storyPath.append( storyPath[0])
+
+        print "findStoryPath, result:"
+
+        first = True
+        steps = 0
+        lastStep = TerrainArc_ROAD
+        for step in storyPath:
+            if isinstance( step, TerrainArc):
+                step.onStoryPath = True
+                steps += 1
+                lastStep = step.arcType
+
+            if isinstance( step, TerrainNode):
+                if step.city:
+                    if steps > 0:
+                        if lastStep == TerrainArc_ROAD:
+                            if (steps > 2):
+                                print "Travel overland a great distance"
+                        else:
+                            print "Take an ocean voyage."
+                    steps = 0
+                    if step.city.dungeon:
+                        print "Adventure at", step.city.name
+                    else:
+                        if first:
+                            print "Start at", step.city.name
+                        else:
+                            print "Visit",step.city.name
+
+            first = False
+
+        # Save the storypath for the novel
+        self.storyPath = storyPath
+
+
+
+    def findStoryPath(self, curr, targ, dleft, storypath ):
+
+        curr.visited = True
+        storypath.append( curr )
+
+        dbgPrint = False
+        self.dbg_count += 1
+        if len(storypath) > self.dbg_bestSoFar:
+            dbgPrint = True
+            self.dbg_bestSoFar = len(storypath)
+        elif self.dbg_count % 1000 == 0:
+            dbgPrint = True
+
+        #if dbgPrint:
+        #    print self.dbg_count, "findStoryPath, pathlen", len(storypath), dleft
+
+        # give up if it's taking too long
+        if self.dbg_count > 1000000:
+            print "Restarting story path..."
+            return [ None ]
+
+        # If we're visiting a dungeon, count it
+        dsub = 0
+        if curr.city and curr.city.dungeon:
+            dsub = 1
+
+        travelArcs = curr.arcs[:]
+        random.shuffle(travelArcs)
+        for arc in travelArcs:
+
+            n2 = arc.other( curr )
+            if n2 == targ and dleft==0:
+                #print "Found targ"
+                return storypath
+
+            if not n2.visited:
+                storypath.append( arc )
+                sp = self.findStoryPath( n2, targ, dleft-dsub, storypath )
+                if (sp):
+                    return sp
+
+                storypath.pop()
+
+        storypath.pop()
+        curr.visited = False
+        return None
+
+
+
+
+    def removeDeadEnds(self):
 
         # Find all the dead-end arcs
         deadEnds = self.findDeadEnds()
 
-        # Make the first few of them dungeons
-        numDungeons = min( len(deadEnds), random.randint( 3, 6) )
-        for d in deadEnds[:numDungeons]:
+        # Make the first few of them villiages
+        numDeadEnds = min( len(deadEnds), random.randint( 1, 3) )
+        for d in deadEnds[:numDeadEnds]:
         #for d in deadEnds:
-            cc = City( d.kingdom, d, dungeon=True )
+            cc = City( d.kingdom, d )
             d.city = cc
-            print "Added dungeon..."
+            print "Added deadend city..."
 
         # Remove all other dead-ends until there are none
         while 1:
@@ -438,7 +586,7 @@ class World(object):
     def pruneRoads(self):
 
         print "PruneRoads..."
-        iterCount = 500
+        iterCount = 100
         origVisitable = self.countVisitableIfArcRemoved( None )
 
         print "origVisitable ", origVisitable
@@ -447,15 +595,19 @@ class World(object):
         for i in xrange(iterCount):
 
 
-            checkArc = random.choice( roads )
+            while 1:
+                checkArc = random.choice( roads )
+                if not checkArc.onStoryPath:
+                    break
+
             count2 = self.countVisitableIfArcRemoved( checkArc )
 
             if count2 == origVisitable:
-                print "Removing arc, count unchanged", origVisitable
+                #print "Removing arc, count unchanged", origVisitable
                 self.removeArc( checkArc )
                 roads.remove( checkArc)
-            else:
-                print "Check arc failed, count is", count2, "continuing"
+            #else:
+            #    print "Check arc failed, count is", count2, "continuing"
 
     def countVisitableIfArcRemoved(self, arc ):
 
@@ -493,7 +645,7 @@ class World(object):
             if n.nodeType == TerrainType_LAND and not n.city:
 
                 # See if there's water adjacent
-                # FIXME: move this to TerainNode
+                # FIXME: move this to TerrainNode
                 hasWater = False
                 for n2 in n.adj:
                     if (n2.nodeType == TerrainType_WATER):

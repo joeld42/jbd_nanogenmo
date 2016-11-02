@@ -134,7 +134,28 @@ class Typesetter(FPDF):
             # self.ellipse( pp[0]-sz2, pp[1]-sz2,
             #               sz, sz, style='DF' )
 
+        # Draw story path
+        self.set_line_width( 1.0 )
+        self.set_draw_color(243, 44, 247)
+        for item in worldMap.storyPath:
+            if isinstance(item, world.TerrainArc):
+                if item.arcType != world.TerrainArc_SEA:
+                    ppA = self.mapToPage( item.a.pos )
+                    ppB = self.mapToPage( item.b.pos )
+                    self.line( ppA[0], ppA[1], ppB[0], ppB[1] )
+            else:
+                if item.city:
+                    sz = 3.0
+                    sz2 = sz / 2.0
+                    pp = self.mapToPage( item.pos )
+                    self.ellipse( pp[0]-sz2, pp[1]-sz2,
+                                sz, sz, style='D' )
+
+
+
+
         # Draw arcs
+        self.set_line_width( 0.2 )
         doDrawArcs = True
         if doDrawArcs:
             for arc in worldMap.arcs:
@@ -146,6 +167,7 @@ class Typesetter(FPDF):
                     self.set_draw_color(160, 117, 0)
                 elif arc.arcType == world.TerrainArc_SEA:
                     self.set_draw_color(0, 226, 247)
+                    continue
                 else:
                     self.set_draw_color( 255, 0, 0 )
 
@@ -166,11 +188,13 @@ class Typesetter(FPDF):
                     self.set_font('Arial', 'B', 7)
                     self.set_fill_color( 255 )
                     self.set_draw_color( 0 )
+                    self.set_text_color( 0 )
                     sz = 2.0
                 else:
                     self.set_font('Arial', 'I', 6)
                     self.set_fill_color( 0 )
                     self.set_draw_color( 0 )
+                    self.set_text_color( 0 )
                     sz = 1.0
 
                 sz2 = sz /2.0
