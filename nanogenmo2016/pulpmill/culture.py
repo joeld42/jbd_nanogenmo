@@ -250,7 +250,7 @@ def setupCultures():
                        ('Governer', 'Governer'),
 
                        [('Mayor','Mayor'), # Other misc nobility
-                        ('Representitive', 'Representitive'),
+                        ('Representative', 'Representative'),
                         ('Congressman', 'Congresswoman') ] ]
 
     setupCulture( "newworld", [ 'us', 'ca'], 50000, 5, ranks=newWorldRanks )

@@ -47,8 +47,7 @@ class Typesetter(FPDF):
         return ( self.map_rect[0] + (p[0] * (self.map_rect[2]/self.map_size[0])),
                  self.map_rect[1] + (p[1] * (self.map_rect[3]/self.map_size[1])) )
 
-    def doMapPage(self):
-
+    def doMapPage(self, maptype):
 
         self.page_border = ( self.l_margin, self.t_margin,
                        self.w - (self.l_margin + self.r_margin),
@@ -59,11 +58,21 @@ class Typesetter(FPDF):
 
         self.add_page()
 
+        self.set_text_color(0)
+        self.set_draw_color(0)
         self.set_font('Arial', 'B', 14)
         self.cell(self.w - (self.l_margin + self.r_margin), 18, self.novel.title, 1, 1, 'C' )
 
+        subtitle = "A Map of the World"
+        if maptype=="politics":
+            subtitle="Political Boundaries"
+        elif maptype=="travel":
+            subtitle="Travel and Shipping"
+        elif maptype=="terrain":
+            subtitle="Geography and Terrain"
+
         self.set_font('Arial', 'B', 10)
-        self.cell(self.w - (self.l_margin + self.r_margin), 10, "A Map of the World", 0, 1, 'C' )
+        self.cell(self.w - (self.l_margin + self.r_margin), 10, subtitle, 0, 1, 'C' )
 
         self.rect( *self.page_border )
 
@@ -111,10 +120,17 @@ class Typesetter(FPDF):
 
                 baseCol = (28, 130, 31)
                 liteCol = (201, 252, 241)
-                if n.kingdom:
+
+                if n.kingdom and maptype=="politics":
                     baseCol = n.kingdom.color
                     liteCol = map(lambda x: min(255, x*2), baseCol )
-
+                elif maptype=="terrain":
+                    if n.region:
+                        baseCol = n.region.color
+                        liteCol = map(lambda x: min(255, x*2), baseCol )
+                    else:
+                        baseCol = (128,128,128)
+                        liteCol = (150,150,150)
 
                 col = utils.lerp( baseCol, liteCol, (n.elevation - 20.0) / 20.0 )
                 self.set_fill_color( *col )
@@ -135,21 +151,22 @@ class Typesetter(FPDF):
             #               sz, sz, style='DF' )
 
         # Draw story path
-        self.set_line_width( 1.0 )
-        self.set_draw_color(243, 44, 247)
-        for item in worldMap.storyPath:
-            if isinstance(item, world.TerrainArc):
-                if item.arcType != world.TerrainArc_SEA:
-                    ppA = self.mapToPage( item.a.pos )
-                    ppB = self.mapToPage( item.b.pos )
-                    self.line( ppA[0], ppA[1], ppB[0], ppB[1] )
-            else:
-                if item.city:
-                    sz = 3.0
-                    sz2 = sz / 2.0
-                    pp = self.mapToPage( item.pos )
-                    self.ellipse( pp[0]-sz2, pp[1]-sz2,
-                                sz, sz, style='D' )
+        if maptype=="travel":
+            self.set_line_width( 1.0 )
+            self.set_draw_color(243, 44, 247)
+            for item in worldMap.storyPath:
+                if isinstance(item, world.TerrainArc):
+                    if item.arcType != world.TerrainArc_SEA:
+                        ppA = self.mapToPage( item.a.pos )
+                        ppB = self.mapToPage( item.b.pos )
+                        self.line( ppA[0], ppA[1], ppB[0], ppB[1] )
+                else:
+                    if item.city:
+                        sz = 3.0
+                        sz2 = sz / 2.0
+                        pp = self.mapToPage( item.pos )
+                        self.ellipse( pp[0]-sz2, pp[1]-sz2,
+                                    sz, sz, style='D' )
 
 
 
@@ -167,60 +184,77 @@ class Typesetter(FPDF):
                     self.set_draw_color(160, 117, 0)
                 elif arc.arcType == world.TerrainArc_SEA:
                     self.set_draw_color(0, 226, 247)
-                    continue
+                    if maptype != "travel":
+                        continue
                 else:
                     self.set_draw_color( 255, 0, 0 )
 
                 self.line( ppA[0], ppA[1], ppB[0], ppB[1] )
 
-
+        # region debug
+        if 0 and (maptype == "terrain"):
+            self.set_text_color( 0 )
+            for n in worldMap.nodes:
+                if n.mtnDebug >= 0:
+                    pp = self.mapToPage( n.pos )
+                    self.set_xy( pp[0], pp[1] - 4)
+                    self.cell( 100, 8, str(n.mtnDebug) )
 
         # City Names
-        self.set_text_color( 0 )
-        for n in worldMap.nodes:
-            if n.city:
-                city = n.city
-                pp = self.mapToPage( n.pos )
+        if (maptype != "terrain"):
+            self.set_text_color( 0 )
+            for n in worldMap.nodes:
+                if n.city:
+                    city = n.city
+                    pp = self.mapToPage( n.pos )
 
-                self.set_xy( pp[0], pp[1] - 4)
+                    self.set_xy( pp[0], pp[1] - 4)
 
-                if city == city.kingdom.capital:
-                    self.set_font('Arial', 'B', 7)
-                    self.set_fill_color( 255 )
-                    self.set_draw_color( 0 )
-                    self.set_text_color( 0 )
-                    sz = 2.0
-                else:
-                    self.set_font('Arial', 'I', 6)
-                    self.set_fill_color( 0 )
-                    self.set_draw_color( 0 )
-                    self.set_text_color( 0 )
-                    sz = 1.0
+                    if city == city.kingdom.capital:
+                        self.set_font('Arial', 'B', 7)
+                        self.set_fill_color( 255 )
+                        self.set_draw_color( 0 )
+                        self.set_text_color( 0 )
+                        sz = 2.0
+                    else:
+                        self.set_font('Arial', 'I', 6)
+                        self.set_fill_color( 0 )
+                        self.set_draw_color( 0 )
+                        self.set_text_color( 0 )
+                        sz = 1.0
 
-                sz2 = sz /2.0
-                self.ellipse( pp[0]-sz2, pp[1]-sz2,
-                              sz, sz, style='DF' )
-                self.cell( 100, 8, city.name )
+                    sz2 = sz /2.0
+                    if city.dungeon:
+                        self.rect( pp[0]-sz2, pp[1]-sz2,
+                            sz, sz, style='DF' )
+                    else:
+                        self.ellipse( pp[0]-sz2, pp[1]-sz2,
+                                  sz, sz, style='DF' )
+                    self.cell( 100, 8, city.name )
 
-            # Kingdom Names
-            # FIXME: get width and center properly
-            self.set_font('Arial', '', 9)
-            for k in worldMap.kingdoms:
-                pp = self.mapToPage( k.center )
+                # Kingdom Names
+                # FIXME: get width and center properly
+                self.set_font('Arial', '', 9)
+                for k in worldMap.kingdoms:
+                    pp = self.mapToPage( k.center )
 
-                wide = self.get_string_width( k.name )
+                    wide = self.get_string_width( k.name )
 
-                self.set_draw_color( 255 )
-                self.set_text_color( 255 )
+                    self.set_draw_color( 255 )
+                    self.set_text_color( 255 )
 
-                self.set_xy( pp[0] - (wide/2), pp[1])
-                self.cell( wide, 8, k.name, 0, 0, 'C' )
+                    self.set_xy( pp[0] - (wide/2), pp[1])
+                    self.cell( wide, 8, k.name, 0, 0, 'C' )
 
 
 
     def typesetNovel(self, filename ):
 
         #self.doTitlePage()
-        self.doMapPage()
+
+        self.doMapPage( "politics")
+        self.doMapPage( "travel")
+        self.doMapPage( "terrain")
+
 
         self.output( filename )

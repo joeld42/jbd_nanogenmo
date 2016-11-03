@@ -99,6 +99,8 @@ class City( object ):
         self.port = port
         self.dungeon = dungeon
 
+
+
 class TerrainArc(object):
 
     def __init__(self, a, b ):
@@ -133,6 +135,12 @@ class TerrainArc(object):
         return "<TerrainArc(%s)>" % desc
 
 
+class TerrainRegion(object):
+
+    def __init__(self, ident, color ):
+        self.ident = ident
+        self.color = color
+
 
 class TerrainNode(object):
 
@@ -151,6 +159,8 @@ class TerrainNode(object):
         self.kingdom = None
 
         self.city = None
+        self.region = None
+        self.mtnDebug = -1
 
         # Temps used for traversals
         self.visited = False
@@ -298,6 +308,10 @@ class World(object):
         # Find Lakes
         self.findLakes()
 
+
+        # Regionize terrain
+        self.makeRegions()
+
         # Assign some kingdoms
         cultureIds = self.cultures.keys()
 
@@ -357,7 +371,9 @@ class World(object):
 
         # Add dungeons and clean up dead ends
         #self.addDungeons()
+
         self.makeStoryPath()
+        #self.storyPath = []
 
         # Prune roads and dead ends
         self.pruneRoads()
@@ -573,6 +589,72 @@ class World(object):
                 n.adj=[]
             else:
                 n.adj = filter( lambda x: not x.nodeType == TerrainType_LAKE, n.adj )
+
+    def makeRegions(self):
+
+        landNodes = filter( lambda x: x.nodeType==TerrainType_LAND, self.nodes )
+
+        # Add random regions
+        regions = []
+        regions.append( TerrainRegion( "swamp", (95, 112, 0) ))
+        regions.append( TerrainRegion( "forest", (35, 178, 0) ))
+        regions.append( TerrainRegion( "desert", (214, 183, 113) ))
+
+        unassignedLands = filter( lambda x: x.region == None, landNodes )
+        numSeeds = len(unassignedLands) / 5
+        random.shuffle(unassignedLands)
+
+        for n in unassignedLands[:numSeeds]:
+            n.region = random.choice( regions )
+
+        # propogate regions
+        while 1:
+            didChange = False
+            for n in landNodes:
+                if n.region and not (n.region.ident == "mountain"):
+                    nadj = n.adj[:]
+                    random.shuffle(nadj)
+                    for n2 in nadj:
+                        if n.nodeType==TerrainType_LAND and not n2.region:
+                            n2.region = n.region
+                            didChange = True
+
+            if not didChange:
+                break
+
+        # Finally, add mountain ranges
+        #numMtns = min(len(landNodes) / 10, 2)
+        numMtns = random.randint( 2, 10)
+        for i in xrange(numMtns):
+
+            curr = random.choice( landNodes )
+            stepDir = random.uniform( 0.0, 360.0 )
+            mtnSize = random.randint( 3, 7 )
+            # mtnSize = 10
+            # stepDir = 45.0
+
+            regionMountian = TerrainRegion( "mountain",(163, 194, 204) )
+            for step in xrange(mtnSize):
+                curr.region = regionMountian
+                curr.mtnDebug = step
+
+                bestNode = None
+                bestAng = 0.0
+                for n2 in curr.adj:
+                    dir = math.atan2( n2.pos[1] - curr.pos[1], n2.pos[0] - curr.pos[0]) * (180.0/math.pi)
+                    ang = math.fabs( dir - stepDir ) # fixme: wrap angles
+                    if not bestNode or ang < bestAng:
+                        bestAng = ang
+                        bestNode = n2
+
+                    print "step", step, "target dir", stepDir, "n2 dir", ang
+                if not bestNode:
+                    break
+
+                curr = bestNode
+
+
+
 
 
     def getLandNodes(self):
