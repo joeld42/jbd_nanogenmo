@@ -3,8 +3,7 @@ import os, sys
 import tracery
 from tracery.modifiers import base_english
 
-from pulpmill import world
-
+from pulpmill import world, scene, storygen, character
 
 
 title_rules = {
@@ -39,13 +38,42 @@ class Novel(object):
 
     def __init__(self, cultures):
         self.cultures = cultures
+        self.scenes = []
 
     def generate(self):
+
 
         self.map = world.World( self.cultures )
         self.map.buildMap()
 
+        # Main character
+        firstNode = self.map.storyPath[0]
+        self.protag = character.Character( firstNode )
+
+        self.scenes += storygen.sceneNormalLife( firstNode, self.protag )
+
+        # Walk the story path to generate scenes
+        lastNode = None
+        for item in self.map.storyPath:
+            if isinstance(item,world.TerrainNode):
+
+                if item.city:
+                    self.scenes += storygen.sceneCity( item )
+                    lastNode = item
+
+                else:
+                    # TODO encounter nodes
+                    pass
+
+            elif isinstance(item,world.TerrainArc):
+
+                if item.arcType == world.TerrainArc_SEA:
+                    self.scenes += storygen.sceneSeaVoyage(  lastNode, item )
+
+
         self.title = self.genTitle()
+
+
 
 
     def dbgPrint(self):
@@ -53,6 +81,13 @@ class Novel(object):
         print "Novel: ", self.title
         print "Setting Info: "
         self.map.dbgPrint()
+
+        print "---- SCENES: -------"
+        for scn in self.scenes:
+            print "-", scn.desc
+
+        wordCount = 50000 / len(self.scenes)
+        print "For a 50K novel, each scene would need to be approx ", wordCount, "words."
 
     def genTitle(self):
         grammar = tracery.Grammar( title_rules )

@@ -16,10 +16,11 @@ if __name__=='__main__':
     for x in range(50):
         c = random.choice( culture.CULTURES.values() )
         print c.genDungeonName()
-    # sys.exit(1)
 
     novel = novel.Novel( culture.CULTURES )
     novel.generate()
+
+    novel.dbgPrint()
 
     # print novel.title
     # for i in range(20):

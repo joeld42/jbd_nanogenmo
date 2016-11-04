@@ -1,6 +1,10 @@
 import os, sys
 import random
 
+def randomChance( pct ):
+    return random.uniform(0.0, 1.0) < pct
+
+
 def randomChoiceWeighted( itemDict ):
     """
     Takes dictionary of { 'item' : weight }

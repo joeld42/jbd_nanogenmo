@@ -165,6 +165,9 @@ class TerrainNode(object):
         # Temps used for traversals
         self.visited = False
 
+        # story gen stuff
+        self.storyVisited = False
+
     def isDeadEnd(self):
         return not self.city and self.nodeType == TerrainType_LAND and (len(self.arcs)==1)
 
@@ -419,6 +422,10 @@ class World(object):
     def makeStoryPath(self):
 
         numDungeons = random.randint( len(self.kingdoms), len(self.kingdoms)*2  )
+
+        #DBG
+        numDungeons = 0
+
         for ndx in xrange(numDungeons):
             k = self.kingdoms[ ndx % len(self.kingdoms)]
 
@@ -647,7 +654,7 @@ class World(object):
                         bestAng = ang
                         bestNode = n2
 
-                    print "step", step, "target dir", stepDir, "n2 dir", ang
+                    #print "step", step, "target dir", stepDir, "n2 dir", ang
                 if not bestNode:
                     break
 
