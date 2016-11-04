@@ -6,6 +6,15 @@ from tracery.modifiers import base_english
 
 from pulpmill import world, scene, utils
 
+def sceneIncitingIncident( node, protag ):
+
+    scn = scene.Scene()
+    scn.desc = "Inciting Incident "
+    scn.chapterTitle = protag.name + "'s Bad Day"
+
+    return [ scn ]
+
+
 def scenePlaceDesc( node ):
 
     scn = scene.Scene()

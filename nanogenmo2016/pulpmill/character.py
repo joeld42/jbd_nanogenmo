@@ -6,7 +6,7 @@ from tracery.modifiers import base_english
 from pulpmill import world, scene, storygen
 
 TWITTER_FOLKS = [
-    "Booyah"  # @booyaa
+    "Booyah",  # @booyaa
     "Cindee", # @rgrrl
     "Blackle Mori",  # @blacklemon67
     "Jovoc", # @joeld42

@@ -1,9 +1,10 @@
 import os, sys
+import random
 
 import tracery
 from tracery.modifiers import base_english
 
-from pulpmill import world, scene, storygen, character
+from pulpmill import world, scene, storygen, character, utils
 
 
 title_rules = {
@@ -50,7 +51,17 @@ class Novel(object):
         firstNode = self.map.storyPath[0]
         self.protag = character.Character( firstNode )
 
+        self.party = []
+
         self.scenes += storygen.sceneNormalLife( firstNode, self.protag )
+
+        if (utils.randomChance(0.5)):
+            self.scenes += storygen.scenePlaceDesc( firstNode )
+
+        # Scramble the prologue scenes
+        random.shuffle( self.scenes )
+
+        self.scenes += storygen.sceneIncitingIncident( firstNode, self.protag )
 
         # Walk the story path to generate scenes
         lastNode = None
@@ -84,7 +95,7 @@ class Novel(object):
 
         print "---- SCENES: -------"
         for scn in self.scenes:
-            print "-", scn.desc
+            print "-", scn.desc, "("+scn.chapterTitle+")"
 
         wordCount = 50000 / len(self.scenes)
         print "For a 50K novel, each scene would need to be approx ", wordCount, "words."
