@@ -99,6 +99,8 @@ class City( object ):
         self.port = port
         self.dungeon = dungeon
 
+        self.size = random.choice(['small', 'medium', 'large'])
+
 
 
 class TerrainArc(object):
@@ -207,14 +209,24 @@ class Kingdom(object):
                            random.randint( 50, 255 ),
                            random.randint( 50, 255 ) )
 
+    def setup(self, sg ):
+
+        fruits = sg.getFruitRules()[:]
+
+        # each kingdom has 3 common fruits
+        random.shuffle(fruits)
+        self.fruits = fruits[:3]
+
+
 class World(object):
 
-    def __init__(self, cultures):
+    def __init__(self, cultures, storygen ):
 
         self.worldname = 'Test World'
         self.daylength = datetime.timedelta( hours = random.randint( 20, 35 ) )
         self.size = MAP_SIZE
         self.cultures = cultures
+        self.sg = storygen
 
         self.nodes = []
 
@@ -328,6 +340,7 @@ class World(object):
 
             culture = self.cultures[cid]
             kingdom = Kingdom( culture )
+            kingdom.setup( self.sg )
 
             capitalNode = random.choice( landNodes )
             landNodes.remove( capitalNode )
@@ -354,6 +367,11 @@ class World(object):
 
             if not didChange:
                 break
+
+        # There may be some straggling unreachable nodes
+        for n in self.nodes:
+            if n.nodeType==TerrainType_LAND and not n.kingdom:
+                n.kingdom = random.choice( self.kingdoms )
 
         # Make some more cities
         numMoreCities = 10

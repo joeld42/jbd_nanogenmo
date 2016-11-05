@@ -1,3 +1,6 @@
 [submodule "nanogenmo2016/extern/py2cairo"]
 	path = nanogenmo2016/extern/py2cairo
 	url = git://git.cairographics.org/git/py2cairo
+[submodule "nanogenmo2016/extern/corpora"]
+	path = nanogenmo2016/extern/corpora
+	url = https://github.com/dariusk/corpora.git

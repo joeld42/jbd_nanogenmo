@@ -43,8 +43,9 @@ class Novel(object):
 
     def generate(self):
 
+        self.sg = storygen.StoryGen()
 
-        self.map = world.World( self.cultures )
+        self.map = world.World( self.cultures, self.sg )
         self.map.buildMap()
 
         # Main character
@@ -52,6 +53,29 @@ class Novel(object):
         self.protag = character.Character( firstNode )
 
         self.party = []
+
+        commonRules = self.sg.getCommonRules( firstNode )
+        # print "Common Rules:"
+        # kk = commonRules.keys()
+        # kk.sort()
+        # for k in kk:
+        #     print k, "-> ", commonRules[k]
+        #
+        # print "Season is ", self.sg.season
+
+        # sceneRules = {
+        #     'origin' : '#weather_sentence.capitalize#'
+        # }
+        # sceneRules.update( commonRules )
+
+        # grammar = tracery.Grammar( sceneRules )
+        # grammar.add_modifiers( base_english )
+        # for i in range(10):
+        #     print str(i+1)+".", grammar.flatten( "#origin#")
+        #
+        # sys.exit(1)
+
+
 
         self.scenes += storygen.sceneNormalLife( firstNode, self.protag )
 
@@ -94,11 +118,27 @@ class Novel(object):
         self.map.dbgPrint()
 
         print "---- SCENES: -------"
-        for scn in self.scenes:
-            print "-", scn.desc, "("+scn.chapterTitle+")"
 
-        wordCount = 50000 / len(self.scenes)
-        print "For a 50K novel, each scene would need to be approx ", wordCount, "words."
+        wordCountTot = 0
+        for scn in self.scenes:
+            scn.generate( self.sg )
+            wordCountTot += scn.wordCount
+
+            print "-", scn.desc, "("+scn.chapterTitle, scn.wordCount, "words)"
+            for pp in scn.storyText:
+                print pp
+                print
+
+
+
+        wordCountAvg = 50000 / len(self.scenes)
+        print "Total word count", wordCountTot
+        print "For a 50K novel, each scene would need to be approx ", wordCountAvg, "words."
+
+        print "--- Kingdoms ---"
+        for k in self.map.kingdoms:
+            print k.name, "   Popular Fruits:", k.fruits
+
 
     def genTitle(self):
         grammar = tracery.Grammar( title_rules )
