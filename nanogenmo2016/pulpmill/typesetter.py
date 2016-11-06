@@ -246,6 +246,23 @@ class Typesetter(FPDF):
                     self.set_xy( pp[0] - (wide/2), pp[1])
                     self.cell( wide, 8, k.name, 0, 0, 'C' )
 
+    def startChapter(self, chapterTitle ):
+
+        self.add_page()
+        self.set_font( 'Times', '', 18 )
+        self.cell( self.w, 20, chapterTitle, 0, 0, 'C')
+        self.ln(20)
+        self.set_font( 'Times', '', 12 )
+
+    def emitScene(self, scene ):
+
+        self.ln( 10 )
+        for pp in scene.storyText:
+
+            if not pp or pp=='TODO':
+                continue
+
+            self.multi_cell( 0, 6, pp )
 
 
     def typesetNovel(self, filename ):
@@ -255,6 +272,14 @@ class Typesetter(FPDF):
         self.doMapPage( "politics")
         self.doMapPage( "travel")
         self.doMapPage( "terrain")
+
+        # TODO: break into chapters smarer
+        scenes = self.novel.scenes[:]
+        chapterNum = 1
+        self.startChapter( "Chapter %d" % chapterNum )
+        while len(scenes):
+            scn = scenes.pop(0)
+            self.emitScene( scn )
 
 
         self.output( filename )

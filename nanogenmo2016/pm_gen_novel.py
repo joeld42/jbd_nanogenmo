@@ -13,9 +13,9 @@ if __name__=='__main__':
 
 
     # Test dungeon names
-    for x in range(50):
-        c = random.choice( culture.CULTURES.values() )
-        print c.genDungeonName()
+    # for x in range(50):
+    #     c = random.choice( culture.CULTURES.values() )
+    #     print c.genDungeonName()
 
     novel = novel.Novel( culture.CULTURES )
     novel.generate()

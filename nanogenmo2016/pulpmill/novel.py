@@ -51,6 +51,7 @@ class Novel(object):
         # Main character
         firstNode = self.map.storyPath[0]
         self.protag = character.Character( firstNode )
+        self.protag.tag = 'protag'
 
         self.party = []
 
@@ -80,7 +81,7 @@ class Novel(object):
         self.scenes += storygen.sceneNormalLife( firstNode, self.protag )
 
         if (utils.randomChance(0.5)):
-            self.scenes += storygen.scenePlaceDesc( firstNode )
+            self.scenes += storygen.scenePlaceDesc( firstNode, self.protag )
 
         # Scramble the prologue scenes
         random.shuffle( self.scenes )
@@ -93,7 +94,7 @@ class Novel(object):
             if isinstance(item,world.TerrainNode):
 
                 if item.city:
-                    self.scenes += storygen.sceneCity( item )
+                    self.scenes += storygen.sceneCity( item, self.protag )
                     lastNode = item
 
                 else:
@@ -121,7 +122,7 @@ class Novel(object):
 
         wordCountTot = 0
         for scn in self.scenes:
-            scn.generate( self.sg )
+            scn.doGenerate( self.sg )
             wordCountTot += scn.wordCount
 
             print "-", scn.desc, "("+scn.chapterTitle, scn.wordCount, "words)"
