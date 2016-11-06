@@ -14,6 +14,19 @@ class Typesetter(FPDF):
 
         FPDF.__init__(self, 'P', 'mm', PocketBookformat )
         self.novel = novel
+        self.inStoryText = False
+        self.firstPage = 0
+
+    def footer(self):
+
+        if (self.inStoryText):
+            self.set_y(-15)
+            # Arial italic 8
+            self.set_font('Arial', 'I', 8)
+            # Page number
+            #self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
+            self.cell(0, 10, str(self.page_no() - self.firstPage), 0, 0, 'C')
+
 
     def doTitlePage(self):
 
@@ -250,19 +263,23 @@ class Typesetter(FPDF):
 
         self.add_page()
         self.set_font( 'Times', '', 18 )
-        self.cell( self.w, 20, chapterTitle, 0, 0, 'C')
+        self.cell( self.w - (self.l_margin + self.r_margin), 20, chapterTitle, 0, 0, 'C')
         self.ln(20)
         self.set_font( 'Times', '', 12 )
 
+        if not self.inStoryText:
+            self.firstPage = self.page-1
+            self.inStoryText = True
+
     def emitScene(self, scene ):
 
-        self.ln( 10 )
+        self.ln( 1 )
         for pp in scene.storyText:
 
             if not pp or pp=='TODO':
                 continue
 
-            self.multi_cell( 0, 6, pp )
+            self.multi_cell( 0, 5, "       " + pp )
 
 
     def typesetNovel(self, filename ):

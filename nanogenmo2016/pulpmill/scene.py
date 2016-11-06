@@ -91,7 +91,7 @@ class ScenePlaceDesc( Scene ):
             ( 0.3, [ '#cityname# was the jewel of #kingdomname#.',
                      '#cityname# was kind of a dump.',
                      '#cityname# was a #beautiful# #citytype#.',
-                     'The stories of #cityname# were legendary.'
+                     'The stories of #cityname# were legendary.',
                      '#cityname# was a #citytype# of kind people.',
                      '#cityname# was a #economic_state# #citytype#, and that kept it #civic_state#.',
                      ] ),
