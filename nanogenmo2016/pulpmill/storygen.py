@@ -60,12 +60,19 @@ class StoryGen(object):
                     "natureThing" : ["stump", "lichen", "fern", "#critter#'s den", "log" ]
                 },
                 "desert": {
-                    "critter" : [ "horse", "camel", "iguana", "rattlesnake" ],
+                    "critter" : [ "horse", "camel", "iguana", "rattlesnake", "armadillo",
+                                  "rabbit", "hare", "shrew", "bat", "mouse", "coyote",
+                                  "scorpian", "crow", "fox", "jackal", "oryx", "sand cat",
+                                  "meercat", "xerus", "viper", "toad", "horned toad",
+                                  "tortoise", "hyrax", "cobra", "chipmunk", "caracal",
+                                  "aardwolf"
+                                  ],
                     "ground" : [ "rocks", "sand", "cracked mud"],
                     "natureThing" : ["outcrop", "gulley", "bonepile", "creekbed", "#critter# skull"]
                 },
             }
 
+        #return StoryGen._region[ "desert" ]
         return StoryGen._region[ node.region.ident ]
 
     def getWeatherRules(self, node ):

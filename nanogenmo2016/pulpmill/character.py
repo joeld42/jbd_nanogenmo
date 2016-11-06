@@ -18,7 +18,7 @@ TWITTER_FOLKS = [
 ]
 
 NAME_RULES = {
-    "origin" : ['#twitter#', '#markov#' ],
+    "origin" : ['#twitter#', '#markov#', '#markov#', '#markov#', '#markov#', '#markov#' ],
     "twitter" : TWITTER_FOLKS,
     "markov" : ['$AA']
 }
