@@ -314,7 +314,7 @@ def sceneAddCharacter( node, world ):
 
     newChar = character.Character( homeNode)
 
-    scn = scene.Scene()
+    scn = scene.SceneAddChar( newChar )
     scn.newChars = [ newChar ]
     scn.desc = "Add " + newChar.name + " from "+newChar.hometown.name+ " to party"
     scn.chapterTitle = random.choice( [ newChar.name, "Meeting "+newChar.name ] )

@@ -110,13 +110,13 @@ class Novel(object):
                     self.scenes += storygen.sceneSeaVoyage(  lastNode, item )
 
 
-        dbgParty = [ self.protag ]
+        self.dbgParty = [ self.protag ]
 
         # Add/Remove characters from the party
         addCooldown = 0
         while addCharIndex < len(self.scenes):
             currScene = self.scenes[addCharIndex]
-            if addCooldown==0 and utils.randomChance(0.5) and currScene.node.city:
+            if addCooldown==0 and utils.randomChance(0.5) and currScene.node and currScene.node.city:
                 addCooldown = 3
 
                 print "currScene is ", currScene.desc, currScene.chapterTitle
@@ -125,7 +125,7 @@ class Novel(object):
                 self.scenes[addCharIndex+1:addCharIndex+1] = addCharScenes
 
                 for c in addCharScenes:
-                    dbgParty += c.newChars
+                    self.dbgParty += c.newChars
 
             addCharIndex += 1
             if addCooldown > 0:
@@ -135,16 +135,17 @@ class Novel(object):
         # be cool to use some info from the story
         self.title = self.genTitle()
 
-        print "Final party: ", len(dbgParty)
-        for p in dbgParty:
-            print "  ",p.name, "a ", p.rpgClass.rpgClass, "from", p.hometown.name
-
 
     def dbgPrint(self):
 
         print "Novel: ", self.title
         print "Setting Info: "
         self.map.dbgPrint()
+
+        print "---- PARTY ", len(self.dbgParty), "-----"
+        for p in self.dbgParty:
+            print "  ",p.name, "a", p.rpgClass.rpgClass, "from", p.hometown.name
+
 
         print "---- SCENES: -------"
 

@@ -87,6 +87,32 @@ class Scene(object):
         self.buildSceneRules( sg )
         self.generate( sg )
 
+class SceneAddChar( Scene ):
+
+    def __init__(self, newChar):
+        super(SceneAddChar, self).__init__()
+
+        self.newChar = newChar
+
+    def generate(self, sg ):
+        """New char is Alice"""
+        template = []
+
+        # Setup
+        sentences = [
+            ( 0.5, [ '#protagName# visited a tavern.',
+                     '#protagName# was #the_feels#. #protagThey# wandered into a garden full of #kfruit.s#.'
+                     ])
+        ]
+        template += utils.addSentencesWithChances( sentences )
+
+        # FIXME: make better
+        template.append( 'Placeholder: A #aliceClass# joined the party. #aliceTheir.capitalize# name was #aliceName#.')
+
+        self.origin = string.join( template, ' ')
+        super(SceneAddChar,self).generate( sg )
+
+
 class ScenePlaceDesc( Scene ):
 
     def __init__(self):
@@ -179,9 +205,6 @@ class ScenePlaceDesc( Scene ):
             wanderText = genWanderText( "protag", wanderCity, steps )
 
             template.append( wanderText )
-
-
-
 
         # Take another idle action
         idleAction = random.choice( protagIdleActions )

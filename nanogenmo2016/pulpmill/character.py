@@ -95,10 +95,11 @@ class Character( object ):
         self.homenode = homenode
         self.hometown = homenode.city
         self.culture = self.hometown.kingdom.culture
-        self.rpgClass = random.choice( Character._rpgClasses )
 
         if not Character._rpgClasses:
             Character._rpgClasses = setupRpgClasses()
+
+        self.rpgClass = random.choice( Character._rpgClasses )
 
         grammar = tracery.Grammar( NAME_RULES )
         grammar.add_modifiers( base_english )
