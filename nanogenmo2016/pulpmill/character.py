@@ -29,13 +29,76 @@ NAME_RULES = {
     "markov" : ['$AA']
 }
 
+class CharacterClass( object ):
+
+    def __init__(self, rpgClass ):
+        self.rpgClass = rpgClass
+
+    def getCharClassRules(self, role ):
+
+        charClassRules = {
+            'ROLEClass' : self.rpgClass
+        }
+
+        return charClassRules
+
+
+def setupRpgClasses():
+
+    rpgClasses = []
+
+    cc = CharacterClass( 'Barbarian')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Bard')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Cleric')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Druid')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Fighter')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Mage')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Monk')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Paladin')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Ranger')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Thief')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Witch')
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Elementalist')
+    rpgClasses.append(cc)
+
+
+    return rpgClasses
+
 class Character( object ):
+
+    _rpgClasses = None
 
     def __init__(self, homenode ):
 
         self.homenode = homenode
         self.hometown = homenode.city
         self.culture = self.hometown.kingdom.culture
+        self.rpgClass = random.choice( Character._rpgClasses )
+
+        if not Character._rpgClasses:
+            Character._rpgClasses = setupRpgClasses()
 
         grammar = tracery.Grammar( NAME_RULES )
         grammar.add_modifiers( base_english )

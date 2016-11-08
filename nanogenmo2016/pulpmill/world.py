@@ -442,7 +442,7 @@ class World(object):
         numDungeons = random.randint( len(self.kingdoms), len(self.kingdoms)*2  )
 
         #DBG
-        #numDungeons = 0
+        numDungeons = 0
 
         for ndx in xrange(numDungeons):
             k = self.kingdoms[ ndx % len(self.kingdoms)]

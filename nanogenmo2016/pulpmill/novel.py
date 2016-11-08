@@ -137,7 +137,7 @@ class Novel(object):
 
         print "Final party: ", len(dbgParty)
         for p in dbgParty:
-            print "  ",p.name, "from", p.hometown.name
+            print "  ",p.name, "a ", p.rpgClass.rpgClass, "from", p.hometown.name
 
 
     def dbgPrint(self):
