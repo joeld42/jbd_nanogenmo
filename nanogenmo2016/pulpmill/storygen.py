@@ -5,7 +5,7 @@ import tracery
 from tracery.modifiers import base_english
 import json
 
-from pulpmill import world, scene, utils
+from pulpmill import world, scene, utils, character
 
 # https://github.com/dariusk/corpora
 CORPORA_ROOT = './extern/corpora'
@@ -46,16 +46,19 @@ class StoryGen(object):
                 "mountain": {
                     "critter" : [ "goat", "bird", "eagle" ],
                     "ground" : [ "rocks", "narrow path", "stones"],
+                    "magic_nature" : [ 'tree', 'cloud', 'mist', 'wind'],
                     "natureThing" : ["thin branch", "skree", "bones of a #critter#", "#critter# scat"]
                 },
                 "swamp": {
                     "critter" : [ "alligator", "rat", "lizard" ],
+                    "magic_nature" : [ 'bog', 'swamp', 'water', 'murk'],
                     "ground" : [ "mud", "mire", "muck", "fetid soil", "bog"],
                     "natureThing" : [ "dirt mound", "dry patch", "#critter# corpse", "#critter# scat" ]
 
                 },
                 "forest": {
                     "critter" : [ "bear", "rat", "lizard" ],
+                    "magic_nature" : [ 'wood', 'moss', 'stone', 'forest'],
                     "ground" : [ "fallen logs", "undergrowth", "moss", "leaves", "pine straw"],
                     "natureThing" : ["stump", "lichen", "fern", "#critter#'s den", "log" ]
                 },
@@ -65,8 +68,8 @@ class StoryGen(object):
                                   "scorpian", "crow", "fox", "jackal", "oryx", "sand cat",
                                   "meercat", "xerus", "viper", "toad", "horned toad",
                                   "tortoise", "hyrax", "cobra", "chipmunk", "caracal",
-                                  "aardwolf"
-                                  ],
+                                  "aardwolf" ],
+                    "magic_nature" : [ 'sand', 'sun', 'desert', 'salt'],
                     "ground" : [ "rocks", "sand", "cracked mud"],
                     "natureThing" : ["outcrop", "gulley", "bonepile", "creekbed", "#critter# skull"]
                 },
@@ -141,15 +144,31 @@ class StoryGen(object):
                 'foodQuality' : ['delicious', 'good', 'sweet', 'rotten', 'bland', 'juicy', 'sour'],
                 'ocean' : ['sea', 'ocean', 'water', 'docks', 'ships', 'boats', 'beach', 'pier'],
                 'compassDir' : [ 'north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest' ],
+                'rough' : ['rough', 'coarse', 'tough', 'grizzled'],
+                'legends' : ['legends', 'old stories', 'old tales', 'some tales', 'whispered rumors', 'rumors' ],
+                'industry' : ['mining', 'logging', 'blacksmithing', 'mercenary', 'farming' ],
+                'kind' : ['kind', 'friendly', 'agreeable', 'generous', 'welcoming', 'hospitable' ],
+                'mean' : [ '#rough#', 'mean', 'grumpy', 'drunk', 'bitter', 'sour', 'angry' ],
+                'kind_or_mean' : ["#kind#", "#mean#"],
 
+                # Magic and Stuff
+                'type_of_elves' : ['#magic_nature# elves', 'druids' ],
 
                 # Deep Thoughts
                 'wondered' : ['wondered about', 'pondered', 'considered', 'thought about'],
                 'the_future' : [ 'the future', '#protagTheir# future', 'what was coming', '#protagTheir# next steps',
                                  'all that had happened', '#protagTheir# journey', 'the #weather_air#',
                                  '#protagTheir# home back in #protagHome#', 'a #critter#',
-                                 '#protagTheir# simple life as a #protagJob#. That was gone now.'
+                                 '#protagTheir# simple life as a #protagJob#. That was gone now..'
                                  ],
+                'the_feels' : [ "happy", "sad", "wistful", "forlorn", "confused", "good", "foul" ],
+                'it_gave_feels' : [
+                    "it reminded #protagThem# of #protagHome#.",
+                    "and felt #the_feels#.",
+                    ". #protagThey.capitalize# felt #the_feels#, but didn't dwell.",
+                    "and it cheered #protagThem# up for a moment.",
+                    ", this put #protagThem# in a #the_feels# mood."
+                ],
                 'thinkWonder' : [ '#protagName# #wondered# #the_future#.'],
             }
 
@@ -165,8 +184,12 @@ class StoryGen(object):
                 }
 
                 portDirs = []
+                portPropBuildings = []
+                portPropJobs = []
                 if node.city.port:
                     portDirs = ['toward the #ocean#', 'away from the #ocean#', 'by the #ocean#' ]
+                    portPropBuildings = [ "shipwright's office", "fishmonger's", "fisherman's hovel" ]
+                    portPropJobs = [ 'sailer', 'fisherman', 'fisherwoman', 'fishmonger' ]
 
                 rules.update( {
                     "cityname" : [ node.city.name ],
@@ -177,8 +200,11 @@ class StoryGen(object):
                     # city rules
                     "marketDesc" : ['tiny', 'overlooked', 'busy', 'tidy', 'messy', 'colorful', 'nearly empty'],
                     "marketStall" : [ 'stall', '#marketDesc# stall', 'vendor'],
-                    "propBuilding" : [ 'smithy', 'tavern', 'clothseller', 'armourer', "shipwright's office", 'garrison',
-                                       'grainery', 'church', 'plaza', 'bakery' ],
+                    "propBuilding" : [ 'smithy', 'tavern', 'clothseller', 'armourer', 'garrison',
+                                       'grainery', 'church', 'plaza', 'bakery' ] + portPropBuildings,
+                    "propJob" : ['cobbler', 'blacksmith', 'armourer', 'wizard', 'monk', 'mercenary', 'merchant',
+                                 'miller', 'street vendor', 'beggar', 'priest',
+                                 'tinker', 'tailer', 'soldier', 'scribe' ] + portPropJobs
                 })
 
             if node.region:
@@ -227,6 +253,7 @@ def sceneCity( node, protag ):
         scenes += scenePlaceDesc( node, protag )
 
     scn = scene.Scene()
+    scn.node = node
     if node.city.dungeon:
         scn.desc = "Adventure in " + node.city.name
     elif node.city.port:
@@ -243,6 +270,7 @@ def sceneNormalLife( node, char ):
     scenes = []
 
     scn = scene.Scene()
+    scn.node = node
     scn.desc = char.name + " does normal stuff in " + node.city.name
     scenes.append( scn )
 
@@ -264,6 +292,7 @@ def sceneSeaVoyage( node, arc ):
         scenes.append( scn )
 
     scn = scene.Scene()
+    scn.node = node
     scn.desc = "Voyage to " + destNode.city.name
     scenes.append( scn )
 
@@ -271,6 +300,26 @@ def sceneSeaVoyage( node, arc ):
         scn = scene.Scene()
         scn.desc = "Arriving in " + node.city.name
         scenes.append( scn )
+
+    return scenes
+
+def sceneAddCharacter( node, world ):
+
+    scenes = []
+
+    if (utils.randomChance(0.5)):
+        homeNode = node
+    else:
+        homeNode = world.randomTownNode()
+
+    newChar = character.Character( homeNode)
+
+    scn = scene.Scene()
+    scn.newChars = [ newChar ]
+    scn.desc = "Add " + newChar.name + " from "+newChar.hometown.name+ " to party"
+    scn.chapterTitle = random.choice( [ newChar.name, "Meeting "+newChar.name ] )
+
+    scenes.append( scn )
 
     return scenes
 

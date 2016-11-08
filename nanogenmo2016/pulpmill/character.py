@@ -5,7 +5,13 @@ import utils
 import tracery
 from tracery.modifiers import base_english
 
-from pulpmill import world, scene, storygen
+from pulpmill import world, scene
+
+# Characters are referred to in the substitution text as 'protag', 'alice',
+# 'bob', and 'chuck'. (e.g. "#chuckName# handed #protagThem# a fruit").
+# Protag is the main character, and alice, bob and chuck are three randomly
+# selected characters from the party.
+
 
 TWITTER_FOLKS = [
     "Booyah",  # @booyaa

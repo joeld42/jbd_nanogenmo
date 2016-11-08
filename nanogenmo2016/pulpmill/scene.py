@@ -5,6 +5,18 @@ import utils
 import tracery
 from tracery.modifiers import base_english
 
+def genWanderText( charName, wanderList, numSteps ):
+
+    wanderText = "#" + charName +"Name#"
+    for i in range(numSteps):
+        step = random.choice( wanderList )
+        if i>0:
+            wanderText += random.choice( [". #"+charName+"They.capitalize#", ", and" ])
+
+        wanderText += " " +step
+
+    wanderText += "."
+    return wanderText
 
 class Scene(object):
 
@@ -24,7 +36,7 @@ class Scene(object):
         self.wordCount = 0
 
         self.sceneRules = []
-        self.setters = []
+        self.newChars = []
 
     def addParagraph(self, pptext ):
         self.storyText.append( pptext )
@@ -91,10 +103,18 @@ class ScenePlaceDesc( Scene ):
             ( 0.3, [ '#cityname# was the jewel of #kingdomname#.',
                      '#cityname# was kind of a dump.',
                      '#cityname# was a #beautiful# #citytype#.',
-                     'The stories of #cityname# were legendary.',
-                     '#cityname# was a #citytype# of kind people.',
+                     'The #legends# of #cityname# were legendary.',
+                     '#cityname# was a #citytype# of #kind_or_mean# people.',
                      '#cityname# was a #economic_state# #citytype#, and that kept it #civic_state#.',
                      ] ),
+
+            # Historical Info
+            ( 0.3, ['#cityname# had been founded by the #type_of_elves#, but it was all #rough# men and women now.',
+                    '#legends.capitalize# stated that #cityname# was built where a fallen star had landed.',
+                    '#cityname# was once the seat of the empire, but no longer.',
+                    'Started as a #industry# town, #cityname# was now a thriving #citytype#.',
+                    '#cityname# '
+                    ])
         ]
 
         if self.node.city.size == 'small':
@@ -119,13 +139,8 @@ class ScenePlaceDesc( Scene ):
                          '#cityname# was huge.'
                          ]) ]
 
-        while not len(template):
-            for prob, sentence in sentences:
-                if (utils.randomChance(prob)):
-                    if not (isinstance( sentence, basestring )):
-                        sentence = random.choice( sentence )
+        template += utils.addSentencesWithChances( sentences )
 
-                    template.append( sentence )
 
         random.shuffle( template )
 
@@ -152,21 +167,17 @@ class ScenePlaceDesc( Scene ):
         busyAction = random.choice( ["wander" ] )
 
         if busyAction == 'wander':
-            wanderText = "#protagName#"
+
             steps = random.randint(3, 5 )
-            stepList = ['#cityWalked# #cityDir#',
+            wanderCity = ['#cityWalked# #cityDir#',
                         'saw a #critter# and kept moving',
-                        'tarried for a bit',
+                        'saw a #critter#', 'chatted with a #kind_or_mean# #propJob#',
+                        'tarried for a bit', 'kicked the #ground#',
+                        'took a few steps', 'sat for a while', 'stopped for a drink',
                         'passed a #propBuilding#' ]
 
-            for i in range(steps):
-                step = random.choice( stepList )
-                if i>0:
-                    wanderText += random.choice( [". #protagThey.capitalize#", ", and" ])
+            wanderText = genWanderText( "protag", wanderCity, steps )
 
-                wanderText += " " +step
-
-            wanderText += "."
             template.append( wanderText )
 
 

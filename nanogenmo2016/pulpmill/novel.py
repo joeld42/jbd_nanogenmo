@@ -88,6 +88,9 @@ class Novel(object):
 
         self.scenes += storygen.sceneIncitingIncident( firstNode, self.protag )
 
+        # After this is the first point we can add new characters
+        addCharIndex = len(self.scenes)
+
         # Walk the story path to generate scenes
         lastNode = None
         for item in self.map.storyPath:
@@ -107,9 +110,34 @@ class Novel(object):
                     self.scenes += storygen.sceneSeaVoyage(  lastNode, item )
 
 
+        dbgParty = [ self.protag ]
+
+        # Add/Remove characters from the party
+        addCooldown = 0
+        while addCharIndex < len(self.scenes):
+            currScene = self.scenes[addCharIndex]
+            if addCooldown==0 and utils.randomChance(0.5) and currScene.node.city:
+                addCooldown = 3
+
+                print "currScene is ", currScene.desc, currScene.chapterTitle
+                addCharScenes = storygen.sceneAddCharacter( currScene.node, self.map )
+
+                self.scenes[addCharIndex+1:addCharIndex+1] = addCharScenes
+
+                for c in addCharScenes:
+                    dbgParty += c.newChars
+
+            addCharIndex += 1
+            if addCooldown > 0:
+                addCooldown -= 1
+
+        # Last, generate the title. Right now this is random but it would
+        # be cool to use some info from the story
         self.title = self.genTitle()
 
-
+        print "Final party: ", len(dbgParty)
+        for p in dbgParty:
+            print "  ",p.name, "from", p.hometown.name
 
 
     def dbgPrint(self):

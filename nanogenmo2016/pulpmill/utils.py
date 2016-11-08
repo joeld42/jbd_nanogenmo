@@ -30,3 +30,23 @@ def randomChoiceWeighted( itemDict ):
 def lerp( a, b, t ):
 
     return tuple(map( lambda x: x[0]*(1.0-t) + x[1]*t, zip(a,b)))
+
+def addSentencesWithChances( sentenceList, ensureNonEmpty=True ):
+        """
+        Takes a list of (probability, sentence) and possibly
+        adds each one based on their probibility. Ensures at least
+         one sentence is returned
+        """
+        template = []
+        while not len(template):
+            for prob, sentence in sentenceList:
+                if (randomChance(prob)):
+                    if not (isinstance( sentence, basestring )):
+                        sentence = random.choice( sentence )
+
+                    template.append( sentence )
+
+            if not ensureNonEmpty:
+                break
+
+        return template
