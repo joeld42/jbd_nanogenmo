@@ -34,7 +34,7 @@ class CharacterClass( object ):
     def __init__(self, rpgClass ):
         self.rpgClass = rpgClass
 
-    def getCharClassRules(self, role ):
+    def getCharClassRules(self ):
 
         charClassRules = {
             'ROLEClass' : self.rpgClass
@@ -137,8 +137,10 @@ class Character( object ):
             'ROLEName' : self.name,
             'ROLEHome' : self.hometown.name,
             'ROLEKingdom' : self.homenode.kingdom.name,
-            'ROLEJob' : self.job
+            'ROLEJob' : self.job,
         }
+
+        charRules.update (self.rpgClass.getCharClassRules() )
 
         charRules.update( self.pronouns )
 

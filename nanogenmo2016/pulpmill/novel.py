@@ -110,13 +110,16 @@ class Novel(object):
                     self.scenes += storygen.sceneSeaVoyage(  lastNode, item )
 
 
-        self.dbgParty = [ self.protag ]
+        self.currParty = [ self.protag ]
 
         # Add/Remove characters from the party
         addCooldown = 0
+        maxChars = 5
         while addCharIndex < len(self.scenes):
             currScene = self.scenes[addCharIndex]
-            if addCooldown==0 and utils.randomChance(0.5) and currScene.node and currScene.node.city:
+            if (addCooldown==0 and utils.randomChance(0.5) and
+                    currScene.node and currScene.node.city and
+                        len(self.currParty)<maxChars):
                 addCooldown = 3
 
                 print "currScene is ", currScene.desc, currScene.chapterTitle
@@ -125,11 +128,21 @@ class Novel(object):
                 self.scenes[addCharIndex+1:addCharIndex+1] = addCharScenes
 
                 for c in addCharScenes:
-                    self.dbgParty += c.newChars
+                    self.currParty += c.newChars
 
             addCharIndex += 1
             if addCooldown > 0:
                 addCooldown -= 1
+
+
+        # TODO: Here add fight scenes and run battle simulations
+
+        # Update party track
+        party = [ self.protag ]
+        for scn in self.scenes:
+            print "SCENE: %s -- %d in party, %d new" % ( scn.desc, len(party), len(scn.newChars) )
+            scn.party = party[:]
+            party += scn.newChars
 
         # Last, generate the title. Right now this is random but it would
         # be cool to use some info from the story
@@ -142,8 +155,8 @@ class Novel(object):
         print "Setting Info: "
         self.map.dbgPrint()
 
-        print "---- PARTY ", len(self.dbgParty), "-----"
-        for p in self.dbgParty:
+        print "---- PARTY ", len(self.currParty), "-----"
+        for p in self.currParty:
             print "  ",p.name, "a", p.rpgClass.rpgClass, "from", p.hometown.name
 
 

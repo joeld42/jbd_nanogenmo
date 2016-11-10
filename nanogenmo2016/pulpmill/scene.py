@@ -1,4 +1,5 @@
 import os, sys, string
+import itertools
 import random
 
 import utils
@@ -43,6 +44,7 @@ class Scene(object):
         self.wordCount += len( string.split( pptext ))
 
     def buildSceneRules(self, sg):
+
         commonRules = sg.getCommonRules( self.node )
 
         # Base scene just uses origin rule, but complex scenes might
@@ -50,6 +52,21 @@ class Scene(object):
         self.sceneRules = {
              'origin' : self.origin
          }
+
+        # Build chars from party and newChars
+        protag = self.party[0]
+
+        otherchars = self.party[1:]
+        random.shuffle(otherchars)
+
+        # new chars go first, then repeat other chars until enough
+        allchars = [protag ] + self.newChars
+        charRoles = ['protag', 'alice', 'bob', 'chuck']
+        otherchars = list(itertools.islice( itertools.cycle( otherchars ), None, 3 )) # Ensure enough otherchars
+        for role, char in zip( charRoles, allchars + otherchars ):
+            #print role, char.name
+            self.chars[role] = char
+
 
         # Add character rules
         for role,char in self.chars.iteritems():
@@ -72,9 +89,10 @@ class Scene(object):
         """
         self.sceneRules['origin'] = self.origin
         #print self, "origin is ", self.origin
-
-        #print "SCENE RULES:"
         #self.dbgPrintRules( self.sceneRules )
+
+        # print "SCENE RULES:"
+        # self.dbgPrintRules( self.sceneRules )
 
         grammar = tracery.Grammar( self.sceneRules )
         grammar.add_modifiers( base_english )
@@ -101,7 +119,7 @@ class SceneAddChar( Scene ):
         # Setup
         sentences = [
             ( 0.5, [ '#protagName# visited a tavern.',
-                     '#protagName# was #the_feels#. #protagThey# wandered into a garden full of #kfruit.s#.'
+                     '#protagName# was #the_feels#. #protagThey.capitalize# wandered into a garden full of #kfruit.s#.'
                      ])
         ]
         template += utils.addSentencesWithChances( sentences )
@@ -109,7 +127,9 @@ class SceneAddChar( Scene ):
         # FIXME: make better
         template.append( 'Placeholder: A #aliceClass# joined the party. #aliceTheir.capitalize# name was #aliceName#.')
 
+        self.origin = 'this is a test origin'
         self.origin = string.join( template, ' ')
+
         super(SceneAddChar,self).generate( sg )
 
 
@@ -166,7 +186,6 @@ class ScenePlaceDesc( Scene ):
                          ]) ]
 
         template += utils.addSentencesWithChances( sentences )
-
 
         random.shuffle( template )
 
