@@ -274,12 +274,15 @@ class Typesetter(FPDF):
     def emitScene(self, scene ):
 
         self.ln( 1 )
-        for pp in scene.storyText:
+        for ppmain in scene.storyText:
 
-            if not pp or pp=='TODO':
-                continue
+            ppsplit = ppmain.split('//')
+            for pp in ppsplit:
 
-            self.multi_cell( 0, 5, "       " + pp )
+                if not pp or pp=='TODO':
+                    continue
+
+                self.multi_cell( 0, 5, "       " + pp )
 
 
     def typesetNovel(self, filename ):

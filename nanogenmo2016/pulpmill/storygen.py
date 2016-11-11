@@ -7,6 +7,7 @@ import json
 
 from pulpmill import world, scene, utils, character
 
+
 # https://github.com/dariusk/corpora
 CORPORA_ROOT = './extern/corpora'
 
@@ -16,6 +17,7 @@ class StoryGen(object):
     _weather = None
     _common = None
     _region = None
+    _tarot = None
 
     def __init__(self):
         pass
@@ -28,6 +30,15 @@ class StoryGen(object):
                 StoryGen._fruits = data['fruits']
 
         return StoryGen._fruits
+
+    def getTarotMeanings(self):
+
+        if not StoryGen._tarot:
+            with open( os.path.join( CORPORA_ROOT, 'data', 'divination', 'tarot_interpretations.json') ) as datafile:
+                    data = json.load(datafile)
+                    StoryGen._tarot = data['tarot_interpretations']
+
+        return StoryGen._tarot
 
     def getKingdomRules(self, kingdom ):
 
@@ -54,7 +65,6 @@ class StoryGen(object):
                     "magic_nature" : [ 'bog', 'swamp', 'water', 'murk'],
                     "ground" : [ "mud", "mire", "muck", "fetid soil", "bog"],
                     "natureThing" : [ "dirt mound", "dry patch", "#critter# corpse", "#critter# scat" ]
-
                 },
                 "forest": {
                     "critter" : [ "bear", "rat", "lizard" ],
@@ -75,7 +85,6 @@ class StoryGen(object):
                 },
             }
 
-        #return StoryGen._region[ "desert" ]
         return StoryGen._region[ node.region.ident ]
 
     def getWeatherRules(self, node ):
@@ -209,6 +218,9 @@ class StoryGen(object):
 
             if node.region:
                 rules.update( self.getRegionRules( node ))
+            else:
+                print "WARNING: node lacks a region"
+
 
             if node.kingdom:
                 rules.update( self.getKingdomRules( node.kingdom ))
@@ -217,111 +229,6 @@ class StoryGen(object):
 
         return rules
 
-# --------------------------------------------
 
-def sceneIncitingIncident( node, protag ):
-
-    scn = scene.Scene()
-    scn.node = node
-    scn.chars = { "protag" : protag }
-    scn.desc = "Inciting Incident"
-
-    #TEST -- Replace with inciting scene from quest
-    scn.origin = "#protagName#'s life was about to change in ways #protagThey# never expected."
-    return [ scn ]
-
-
-def scenePlaceDesc( node, protag ):
-
-    scn = scene.ScenePlaceDesc()
-    city = node.city
-    scn.chars = { "protag" : protag }
-    scn.desc = "Description of " + city.name
-    scn.chapterTitle = city.name
-    scn.origin= '#weather_sentence.capitalize#'
-    scn.node = node
-
-    node.storyVisited = True
-
-    return [ scn ]
-
-def sceneCity( node, protag ):
-
-    scenes = []
-
-    if not node.storyVisited:
-        scenes += scenePlaceDesc( node, protag )
-
-    scn = scene.Scene()
-    scn.node = node
-    if node.city.dungeon:
-        scn.desc = "Adventure in " + node.city.name
-    elif node.city.port:
-        scn.desc = "Visit Port town of " + node.city.name
-    else:
-        scn.desc = "Visit City " + node.city.name
-
-    scenes.append( scn )
-
-    return scenes
-
-def sceneNormalLife( node, char ):
-
-    scenes = []
-
-    scn = scene.Scene()
-    scn.node = node
-    scn.desc = char.name + " does normal stuff in " + node.city.name
-    scenes.append( scn )
-
-    return scenes
-
-def sceneSeaVoyage( node, arc ):
-
-    # TODO: more types of sea voyages
-    print "destNode", node, node.city, "arc:", arc.arcType
-    print "arc", arc.a.city.name, arc.b.city.name
-    destNode = arc.other(node)
-
-    scenes = []
-
-    if utils.randomChance(0.3):
-        scn = scene.Scene()
-        scn.desc = "Finding passage in " + node.city.name
-        scn.chapterTitle = "Find a boat" # name of the boat?
-        scenes.append( scn )
-
-    scn = scene.Scene()
-    scn.node = node
-    scn.desc = "Voyage to " + destNode.city.name
-    scenes.append( scn )
-
-    if utils.randomChance(0.3):
-        scn = scene.Scene()
-        scn.desc = "Arriving in " + node.city.name
-        scenes.append( scn )
-
-    return scenes
-
-def sceneAddCharacter( node, world ):
-
-    scenes = []
-
-    if (utils.randomChance(0.5)):
-        homeNode = node
-    else:
-        homeNode = world.randomTownNode()
-
-    newChar = character.Character( homeNode)
-
-    scn = scene.SceneAddChar( newChar )
-    scn.node = node
-    scn.newChars = [ newChar ]
-    scn.desc = "Add " + newChar.name + " from "+newChar.hometown.name+ " to party"
-    scn.chapterTitle = random.choice( [ newChar.name, "Meeting "+newChar.name ] )
-
-    scenes.append( scn )
-
-    return scenes
 
 

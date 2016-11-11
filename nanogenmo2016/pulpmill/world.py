@@ -442,7 +442,7 @@ class World(object):
         numDungeons = random.randint( len(self.kingdoms), len(self.kingdoms)*2  )
 
         #DBG
-        numDungeons = 0
+        #numDungeons = 0
 
         for ndx in xrange(numDungeons):
             k = self.kingdoms[ ndx % len(self.kingdoms)]
@@ -652,6 +652,11 @@ class World(object):
 
             if not didChange:
                 break
+
+        # Assign any straggler lands w/o a region
+        unassignedLands = filter( lambda x: x.region == None, landNodes )
+        for n in unassignedLands:
+            n.region = random.choice( regions )
 
         # Finally, add mountain ranges
         #numMtns = min(len(landNodes) / 10, 2)

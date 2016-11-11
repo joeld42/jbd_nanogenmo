@@ -78,15 +78,15 @@ class Novel(object):
 
 
 
-        self.scenes += storygen.sceneNormalLife( firstNode, self.protag )
+        self.scenes += scene.sceneNormalLife( firstNode, self.protag )
 
         if (utils.randomChance(0.5)):
-            self.scenes += storygen.scenePlaceDesc( firstNode, self.protag )
+            self.scenes += scene.scenePlaceDesc( firstNode, self.protag )
 
         # Scramble the prologue scenes
         random.shuffle( self.scenes )
 
-        self.scenes += storygen.sceneIncitingIncident( firstNode, self.protag )
+        self.scenes += scene.sceneIncitingIncident( firstNode, self.protag )
 
         # After this is the first point we can add new characters
         addCharIndex = len(self.scenes)
@@ -97,7 +97,7 @@ class Novel(object):
             if isinstance(item,world.TerrainNode):
 
                 if item.city:
-                    self.scenes += storygen.sceneCity( item, self.protag )
+                    self.scenes += scene.sceneCity( item, self.protag )
                     lastNode = item
 
                 else:
@@ -107,7 +107,7 @@ class Novel(object):
             elif isinstance(item,world.TerrainArc):
 
                 if item.arcType == world.TerrainArc_SEA:
-                    self.scenes += storygen.sceneSeaVoyage(  lastNode, item )
+                    self.scenes += scene.sceneSeaVoyage(  lastNode, item )
 
 
         self.currParty = [ self.protag ]
@@ -117,22 +117,32 @@ class Novel(object):
         maxChars = 5
         while addCharIndex < len(self.scenes):
             currScene = self.scenes[addCharIndex]
+
             if (addCooldown==0 and utils.randomChance(0.5) and
                     currScene.node and currScene.node.city and
                         len(self.currParty)<maxChars):
                 addCooldown = 3
 
                 print "currScene is ", currScene.desc, currScene.chapterTitle
-                addCharScenes = storygen.sceneAddCharacter( currScene.node, self.map )
+                addCharScenes = scene.sceneAddCharacter( currScene.node, self.map )
 
                 self.scenes[addCharIndex+1:addCharIndex+1] = addCharScenes
 
                 for c in addCharScenes:
                     self.currParty += c.newChars
 
+            # if chatCooldown==0 and len(self.currParty)>=2 and utils.randomChance(0.9):
+            #
+            #     convoScenes = scene.sceneDialogueFiller( currScene.node )
+            #     self.scenes[addCharIndex+1:addCharIndex+1] = convoScenes
+            #
+            #     chatCooldown = 4
+
+
             addCharIndex += 1
             if addCooldown > 0:
                 addCooldown -= 1
+
 
 
         # TODO: Here add fight scenes and run battle simulations
@@ -144,10 +154,37 @@ class Novel(object):
             scn.party = party[:]
             party += scn.newChars
 
+
+        # Add a bunch of filler scenes
+        chatCooldown = 0
+        fillerSceneIndex = 0
+        while fillerSceneIndex < len(self.scenes):
+            currScene = self.scenes[fillerSceneIndex]
+
+            if chatCooldown==0 and len(currScene.party)>=2 and utils.randomChance(0.9):
+                convoScenes = scene.sceneDialogueFiller( currScene.node )
+
+                for scn in convoScenes:
+                    scn.node = currScene.node
+                    scn.party = currScene.party
+
+                self.scenes[fillerSceneIndex+1:fillerSceneIndex+1] = convoScenes
+
+                chatCooldown = 4
+
+            fillerSceneIndex += 1
+            if chatCooldown > 0:
+                chatCooldown -= 1
+
         # Last, generate the title. Right now this is random but it would
         # be cool to use some info from the story
         self.title = self.genTitle()
 
+        # Do some sanity checks
+        for scn in self.scenes:
+            if scn.node is None:
+                print "SCENE MISSING NODE: ", scn, scn.desc, scn.chapterTitle, scn.party
+                sys.exit(1)
 
     def dbgPrint(self):
 

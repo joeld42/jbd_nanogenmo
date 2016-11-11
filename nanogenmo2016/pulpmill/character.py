@@ -5,7 +5,7 @@ import utils
 import tracery
 from tracery.modifiers import base_english
 
-from pulpmill import world, scene
+from pulpmill import world
 
 # Characters are referred to in the substitution text as 'protag', 'alice',
 # 'bob', and 'chuck'. (e.g. "#chuckName# handed #protagThem# a fruit").

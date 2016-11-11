@@ -6,6 +6,55 @@ import utils
 import tracery
 from tracery.modifiers import base_english
 
+from pulpmill import world, utils, character
+
+# TODO List for scene types
+# Scene Type        Placeholder  Text
+# ------------------------------------
+#  Place Desc           [X]       [X]
+#  Normal Life          [X]       [ ]
+#  Epic: Incit. Inc.    [X]       [ ]
+#  Sea Voyage           [X]       [ ]
+#  Add Character        [X]       [ ]
+#  Encounter Outdoor    [ ]       [ ]
+#  Dungeon Filler       [ ]       [ ]
+#  Dialogue Filler      [ ]       [ ]
+#  Quest: Setup         [ ]       [ ]
+#  Quest: Resolve       [ ]       [ ]
+#  Epic: Return         [ ]       [ ]
+
+
+def placeholder( text ):
+    """
+    Adds punctuation. Also a useful place to check if I have placeholders in the future.
+    """
+    return text+"."
+
+def first_lower(s):
+    if len(s) == 0:
+      result = s
+    else:
+      result = s[0].lower() + s[1:]
+
+    return result
+
+def speakText( text, speaker, isReply ):
+
+    speakStatments = ['"%(text)s", said %(speaker)s.//',
+                     '%(speaker)s said, "%(text)s"//',
+                     ]
+
+    if isReply:
+        speakStatments += ['"%(text)s", replied %(speaker)s.//',
+                           '%(speaker)s replied, "%(text)s"//',
+                            ]
+
+    statement = random.choice( speakStatments )
+
+    result = statement % {"speaker" : speaker, "text" : text }
+
+    return result
+
 def genWanderText( charName, wanderList, numSteps ):
 
     wanderText = "#" + charName +"Name#"
@@ -40,6 +89,18 @@ class Scene(object):
         self.newChars = []
 
     def addParagraph(self, pptext ):
+
+        if pptext.find('((') != -1 and pptext.find('))') != -1:
+            print "StoryText: ", pptext
+            print "Party:", self.party
+            print "Node: ", self.node
+            if self.node:
+                print "Region: ", self.node.region
+            else:
+                print "No region..."
+
+            raise Exception( "StoryError", "Found unexpanded rules in story text")
+
         self.storyText.append( pptext )
         self.wordCount += len( string.split( pptext ))
 
@@ -105,6 +166,30 @@ class Scene(object):
         self.buildSceneRules( sg )
         self.generate( sg )
 
+# -------------------------------------------------------------
+#   Add Character
+# -------------------------------------------------------------
+def sceneAddCharacter( node, world ):
+
+    scenes = []
+
+    if (utils.randomChance(0.5)):
+        homeNode = node
+    else:
+        homeNode = world.randomTownNode()
+
+    newChar = character.Character( homeNode)
+
+    scn = SceneAddChar( newChar )
+    scn.node = node
+    scn.newChars = [ newChar ]
+    scn.desc = "Add " + newChar.name + " from "+newChar.hometown.name+ " to party"
+    scn.chapterTitle = random.choice( [ newChar.name, "Meeting "+newChar.name ] )
+
+    scenes.append( scn )
+
+    return scenes
+
 class SceneAddChar( Scene ):
 
     def __init__(self, newChar):
@@ -124,13 +209,230 @@ class SceneAddChar( Scene ):
         ]
         template += utils.addSentencesWithChances( sentences )
 
-        # FIXME: make better
-        template.append( 'Placeholder: A #aliceClass# joined the party. #aliceTheir.capitalize# name was #aliceName#.')
+        template.append( 'A #aliceClass# joined the party. #aliceTheir.capitalize# name was #aliceName#.')
 
-        self.origin = 'this is a test origin'
         self.origin = string.join( template, ' ')
 
         super(SceneAddChar,self).generate( sg )
+
+# -------------------------------------------------------------
+#   Inciting Incident (TODO part of quest?)
+# -------------------------------------------------------------
+
+def sceneIncitingIncident( node, protag ):
+
+    scn = Scene()
+    scn.node = node
+    scn.chars = { "protag" : protag }
+    scn.desc = "Inciting Incident"
+
+    #TEST -- Replace with inciting scene from quest
+    scn.origin = placeholder("#protagName#'s life was about to change in ways #protagThey# never expected")
+    return [ scn ]
+
+# -------------------------------------------------------------
+#   Everyday Life
+# -------------------------------------------------------------
+
+def sceneNormalLife( node, char ):
+
+    scenes = []
+
+    scn = Scene()
+    scn.node = node
+    scn.desc = char.name + " does normal stuff in " + node.city.name
+
+    scn.origin = placeholder("#protagName# was a humble #protagJob# in #protagHome#")
+
+    scenes.append( scn )
+
+    return scenes
+
+# -------------------------------------------------------------
+#   Dialogue Filler
+# -------------------------------------------------------------
+def sceneDialogueFiller( node ):
+
+    scenes = []
+
+    scn = SceneDialogueFiller()
+    #scn.origin = placeholder( "#protagName# and #aliceName# had a profound conversation")
+    scenes.append( scn )
+
+    scn.desc = "Dialogue Filler"
+
+    return scenes
+
+class SceneDialogueFiller( Scene ):
+
+    def __init__(self):
+        super(SceneDialogueFiller,self).__init__()
+
+
+    def generate( self, sg ):
+
+        """
+        Judge-y squabble. Would be nice to add more types of filler. :)
+        """
+        template = []
+
+        # Set up the conversation
+        sentences = [
+            ( 0.3, '#weather_sentence.capitalize#' ),
+
+            # Judgy statement
+            ( 0.3, '#protagName# and #aliceName# stopped in to a tavern.' )
+
+            ]
+
+        template += utils.addSentencesWithChances( sentences )
+        random.shuffle( template )
+
+        sg.tarot = sg.getTarotMeanings()
+        tarot = random.choice( sg.tarot)
+
+        self.chapterTitle = random.choice( tarot['keywords'] ).title()
+        lightStatements = tarot['meanings']['light'][:]
+        shadowStatements = tarot['meanings']['shadow'][:]
+
+        allResponses = [
+                "I see it as more %s.",
+                "Is that what you think? I think it's %s.",
+                "Is that how you see it? It's just %s.",
+                "Really? More like %s.",
+                "I'm merely %s.",
+                "Certainly not. I'm %s.",
+            ]
+
+        allStatments = [
+                    "I mean, it just seems like you're %s.",
+                    "Maybe %s, just a bit?",
+                    "You're %s. It's not uncommon for #aliceClass.a#."
+                ]
+
+        for i in range(random.randint(1,2)):
+            if i==0:
+                stmt = random.choice([
+                    '''"I'm wondering, #aliceName#," asked #protagName#," do you worry that you're %s?"//''',
+                    'I wanted to talk to you about %s.',
+                    "You're %s. It makes me #the_feels#.",
+                    'Can we chat about %s',
+                    "Hey! You're %s. Knock it off.",
+                    "Are you aware that you're %s?",
+                    '''"Hey, I just..." #protagName# trailed off. #protagThey.capitalize# shifted on the #ground#. "Are you %s?" #protagThey# asked.//'''
+                ])
+            else:
+                stmt = random.choice( allStatments)
+                allStatments.remove( stmt )
+
+            response = random.choice(allResponses)
+            allResponses.remove( response )
+
+            shadowThing = random.choice(shadowStatements)
+            shadowStatements.remove(shadowThing)
+            shadowThing = first_lower( shadowThing )
+            stmt = stmt % (shadowThing)
+
+            lightThing = random.choice(lightStatements)
+            lightStatements.remove(lightThing)
+
+            lightThing = string.replace( first_lower( lightThing ), "your", "my" )
+            response = response % (lightThing)
+
+            isReply = (i!=0)
+
+            if stmt.find('"') == -1:
+                speakStatment = speakText( stmt, '#protagName#', isReply )
+            else:
+                speakStatment = stmt
+
+            template.append( speakStatment )
+            template.append( speakText( response, '#aliceName#', isReply ) )
+
+        template.append( random.choice( ['#thinkWonder#', '#weather_sentence.capitalize#'] ))
+
+        self.origin = string.join( template, ' ')
+        # print self.origin
+
+        super(SceneDialogueFiller,self).generate( sg )
+
+# -------------------------------------------------------------
+#   Sea Voyage
+# -------------------------------------------------------------
+
+def sceneSeaVoyage( node, arc ):
+
+    # TODO: more types of sea voyages
+    print "destNode", node, node.city, "arc:", arc.arcType
+    print "arc", arc.a.city.name, arc.b.city.name
+    destNode = arc.other(node)
+
+    scenes = []
+
+    if utils.randomChance(0.3):
+        scn = Scene()
+        scn.desc = "Finding passage in " + node.city.name
+        scn.node = node
+        scn.chapterTitle = "Find a boat" # name of the boat?
+        scn.origin = placeholder("#protagName# had some trouble finding a boat to "+destNode.city.name )
+        scenes.append( scn )
+
+    scn = Scene()
+    scn.node = node
+    scn.desc = "Voyage to " + destNode.city.name
+    scn.origin = placeholder( "Stuff happened on the boat ride to "+destNode.city.name )
+
+    scenes.append( scn )
+
+    if utils.randomChance(0.3):
+        scn = Scene()
+        scn.desc = "Arriving in " + node.city.name
+        scn.node = node
+        scn.orign = placeholder( "#protagName# arrived in "+destNode.city.name+" and #it_gave_feels#")
+        scenes.append( scn )
+
+    return scenes
+
+# -------------------------------------------------------------
+#   Place Desc
+# -------------------------------------------------------------
+
+
+def sceneCity( node, protag ):
+
+    scenes = []
+
+    if not node.storyVisited:
+        scenes += scenePlaceDesc( node, protag )
+
+    scn = Scene()
+    scn.node = node
+    if node.city.dungeon:
+        scn.desc = "Adventure in " + node.city.name
+        scn.origin = placeholder("#protagName# and #aliceName# fought their way through "+node.city.name )
+    elif node.city.port:
+        scn.desc = "Visit Port town of " + node.city.name
+        scn.origin = placeholder("#protagName# visited the port town of " + node.city.name )
+    else:
+        scn.desc = "Visit City " + node.city.name
+        scn.origin = placeholder( "#protagName# had some stuff happen in "+ node.city.name )
+
+    scenes.append( scn )
+
+    return scenes
+
+def scenePlaceDesc( node, protag ):
+
+    scn = ScenePlaceDesc()
+    city = node.city
+    scn.chars = { "protag" : protag }
+    scn.desc = "Description of " + city.name
+    scn.chapterTitle = city.name
+    scn.node = node
+
+    node.storyVisited = True
+
+    return [ scn ]
 
 
 class ScenePlaceDesc( Scene ):
@@ -198,7 +500,7 @@ class ScenePlaceDesc( Scene ):
             "#critter.a.capitalize# passed through the #weather_air#.",
             "#protagName# wandered through the market. #protagThey.capitalize# bought a #kfruit# from a #marketStall# and took a bite. It was #foodQuality#. #thinkWonder#",
             "#protagName# walked for a bit. #protagThey.capitalize# passed a #propBuilding#.",
-            "Some peasants were dying cloth nearby, it made the #weather_air# smell of #kfruit2#. #thinkWonder#",
+            "Some peasants were dyeing cloth nearby, it made the #weather_air# smell of #kfruit2#. #thinkWonder#",
             "#protagName# wondered about the folks living here. Most that #protagThey# passed seemed happy, but, #protagThey# would be glad to move on.",
             "#protagName# sat down on the #ground# for a bit. #thinkWonder#",
         ]
