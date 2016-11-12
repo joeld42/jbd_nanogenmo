@@ -55,24 +55,28 @@ class StoryGen(object):
         if not StoryGen._region:
             StoryGen._region = {
                 "mountain": {
+                    "region" : ["mountain", "rocky steppe", "steep shard", "crater"],
                     "critter" : [ "goat", "bird", "eagle" ],
                     "ground" : [ "rocks", "narrow path", "stones"],
                     "magic_nature" : [ 'tree', 'cloud', 'mist', 'wind'],
                     "natureThing" : ["thin branch", "skree", "bones of a #critter#", "#critter# scat"]
                 },
                 "swamp": {
+                    "region" : [ "swamp", "bog", "marsh", "wetland", "salt marsh", "marshland", "estuary" ],
                     "critter" : [ "alligator", "rat", "lizard" ],
                     "magic_nature" : [ 'bog', 'swamp', 'water', 'murk'],
                     "ground" : [ "mud", "mire", "muck", "fetid soil", "bog"],
                     "natureThing" : [ "dirt mound", "dry patch", "#critter# corpse", "#critter# scat" ]
                 },
                 "forest": {
+                    "region" : [ "forest", "wood", "woodland", "grove", "wilderness", "jungle", "pine forest"  ],
                     "critter" : [ "bear", "rat", "lizard" ],
                     "magic_nature" : [ 'wood', 'moss', 'stone', 'forest'],
                     "ground" : [ "fallen logs", "undergrowth", "moss", "leaves", "pine straw"],
                     "natureThing" : ["stump", "lichen", "fern", "#critter#'s den", "log" ]
                 },
                 "desert": {
+                    "region" : [ "desert", "prarie", "arid sands", "high desert" ],
                     "critter" : [ "horse", "camel", "iguana", "rattlesnake", "armadillo",
                                   "rabbit", "hare", "shrew", "bat", "mouse", "coyote",
                                   "scorpian", "crow", "fox", "jackal", "oryx", "sand cat",
@@ -163,6 +167,10 @@ class StoryGen(object):
                 # Magic and Stuff
                 'type_of_elves' : ['#magic_nature# elves', 'druids' ],
 
+                # Descriptive Nonsense
+                'fungus' : ['fungus', 'root system', "vole's burrow" ],
+                'bad_vibe' : ['oppressive', 'claustrophobic', 'empty', 'gloomy', 'foreboding' ],
+
                 # Deep Thoughts
                 'wondered' : ['wondered about', 'pondered', 'considered', 'thought about'],
                 'the_future' : [ 'the future', '#protagTheir# future', 'what was coming', '#protagTheir# next steps',
@@ -204,6 +212,7 @@ class StoryGen(object):
                     "cityname" : [ node.city.name ],
                     "citytype" : citytype[node.city.size],
                     "cityDir" : ["#compassDir#", "uphill", "downhill" ] + portDirs,
+                    "dungeonDir" : ["#compassDir#", "downward" ],
                     'cityWalked' : [ 'walked', 'turned', 'strolled', 'wandered' ],
 
                     # city rules

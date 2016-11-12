@@ -442,6 +442,72 @@ class ScenePlaceDesc( Scene ):
 
     def generate( self, sg ):
 
+        if self.node.city.dungeon:
+            self.generateDungeon( sg )
+        else:
+            self.generateCity(sg)
+
+        super(ScenePlaceDesc,self).generate( sg )
+
+    def generateDungeon( self, sg ):
+
+        template = []
+
+        sentences = [
+            ( 0.3, '#weather_sentence.capitalize#' ),
+
+            # Description/entrance
+            ( 0.99, ['#cityname# was barely more than a speck on the #region#, but spread beneath the #ground# like #fungus#.',
+                     'Behind a #natureThing#, #aliceName# spotted the entrance to #cityname#.',
+                     '#cityname# had been left to the #critter.s# for a thousand moons.',
+                     '#cityname# was a forlorn ruin, but it was far from empty.',
+                     '"I have a bad feeling about this," muttered #aliceName#, as they approach the entrance to #cityname#.',
+                     ] ),
+
+            # Foreboding event
+            ( 0.5, [ 'A #critter# hissed and scurried past them.',
+                     'A hollow booming sound echoed from underground.',
+                     'They passed scratch marks tinged with dried blood on the #weather_adj# walls.',
+                     'Their footsteps echoed in the chamber.',
+                     'The wind howled through gaps in the rough stone.',
+                     "A chill ran down #protagName#'s spine. #protagThey# felt #the_feels#."
+                ] ),
+
+            # Ambience
+            ( 0.3, [ 'Lightning flashed in the #weather_adj# air outside, throwing shadows on the walls.',
+                     'A distant thunder rumbled.',
+                     'Rats scurried away around their feet.',
+                     'The #weather_adj# air felt #bad_vibe#.' ] )
+            ]
+
+        template += utils.addSentencesWithChances( sentences )
+
+        random.shuffle( template )
+
+        # Walk for a bit deeper into the dungeon
+        steps = random.randint(3, 5 )
+        wanderDungeon = ['walked carefully on the crumbling stones',
+                         'walked #dungeonDir#', 'ducked to pass the low ceiling',
+                         'breathed cautiously', 'shivered', 'lit a torch',
+                         'squinted']
+
+        wanderText = genWanderText( random.choice(["protag", "alice", "bob"]), wanderDungeon, steps )
+        template.append( wanderText )
+
+
+        # Now they are in the belly of the dungeon
+        template.append( random.choice( [
+            "The air was #weather_adj#. They were well into #cityname# now.",
+            "A door boomed closed behind them. They were trapped in #cityname#, but they weren't alone.",
+            "Inhuman sounds echoed from the walls. A #critter# fled in terror from whatever lay ahead.",
+            "This was the belly of #cityname#."
+        ] ))
+
+
+        self.origin = string.join( template, ' ')
+
+    def generateCity( self, sg ):
+
         template = []
 
         sentences = [
@@ -461,7 +527,7 @@ class ScenePlaceDesc( Scene ):
                     '#legends.capitalize# stated that #cityname# was built where a fallen star had landed.',
                     '#cityname# was once the seat of the empire, but no longer.',
                     'Started as a #industry# town, #cityname# was now a thriving #citytype#.',
-                    '#cityname# '
+                    '#cityname# was once a trading center at a great crossroads, but those roads faded into #critter# trails.'
                     ])
         ]
 
@@ -516,7 +582,7 @@ class ScenePlaceDesc( Scene ):
         if busyAction == 'wander':
 
             steps = random.randint(3, 5 )
-            wanderCity = ['#cityWalked# #cityDir#',
+            wanderCity = ['walked #cityDir#',
                         'saw a #critter# and kept moving',
                         'saw a #critter#', 'chatted with a #kind_or_mean# #propJob#',
                         'tarried for a bit', 'kicked the #ground#',
@@ -536,7 +602,7 @@ class ScenePlaceDesc( Scene ):
         self.origin = string.join( template, ' ')
         # print self.origin
 
-        super(ScenePlaceDesc,self).generate( sg )
+
 
 
 
