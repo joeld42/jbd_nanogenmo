@@ -11,11 +11,16 @@ if __name__=='__main__':
 
     culture.setupCultures()
 
-
-    # Test dungeon names
+    # Test generator
     # for x in range(50):
     #     c = random.choice( culture.CULTURES.values() )
-    #     print c.genDungeonName()
+    #     q = quest.Quest( c )
+    #
+    #     # itemName, itemTags = c.genMacGuffin()
+    #
+    #     print q.item, '(',','.join(q.itemtags), ')'
+    #
+    # sys.exit(1)
 
     novel = novel.Novel( culture.CULTURES )
     novel.generate()

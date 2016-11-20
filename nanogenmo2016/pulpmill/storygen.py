@@ -170,6 +170,11 @@ class StoryGen(object):
                 # Descriptive Nonsense
                 'fungus' : ['fungus', 'root system', "vole's burrow" ],
                 'bad_vibe' : ['oppressive', 'claustrophobic', 'empty', 'gloomy', 'foreboding' ],
+                'long_time' : ['a #thousand# #years#', "#ages#", "since before #the_past#"],
+                'ages' : ['ages', 'aeons', 'epochs', 'millenia'],
+                'years' : ['moons', 'years', 'seasons' ],
+                'thousand' : ['thousand', 'hundred', 'uncounted' ],
+                'the_past' : ['the great war', 'the age of man', 'recorded history', 'living memory'],
 
                 # Deep Thoughts
                 'wondered' : ['wondered about', 'pondered', 'considered', 'thought about'],

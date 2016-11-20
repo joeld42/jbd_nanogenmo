@@ -1,4 +1,5 @@
 import os, sys
+import re
 import string
 import random
 import tracery
@@ -40,6 +41,21 @@ DUNGEON_RULES = {
     "evocative" : ["#somebody#'s #bodypart#", "#somebody#'s #downfall#", "ruins of $PP"],
     "bodypart" : ["eye", "knee", "crown", "ear" ],
     "downfall" : ["end", "bane", "tomb", "lament", "ruin" ],
+}
+
+MACGUFFIN_RULES = {
+    "origin" : ['#magic_doodad#<magic>', '#relic#<relic>', "#magic_weapon#<magic>"],
+    "magic_doodad" : [ '#jewelry# of #something#' ],
+    "magic_weapon" : [ '#weapon# of $PP', '#mystical# #weapon#'],
+    "relic" : ["#mystical# #shape#" ],
+    "jewelry" : [ 'ring<ring>', 'crown', 'amulet', '#gemstone#<gemstone>' ],
+    "something" : [ '$PP', 'Yendor' ],
+    "gemstone" : ['ruby', 'emerald', 'stone', 'egg'],
+    "mystical" : ['cerulean', 'mystic', 'knuckle<bone>', 'finger<bone>', 'daemon<cursed>', 'angel<holy>',
+                  'blessed<holy>', 'dark<cursed>', 'bone<bone><cursed>', 'dragon-bone<bone>' ],
+    "shape" : ['cube<polyhedra>', 'sphere<polyhedra>', '#symbol#'  ],
+    "symbol" : ['scarab<egyptian>', 'ankh<egyptian>', 'seal' ],
+    "weapon" : ['dagger<weapon>', 'sword<weapon>', 'blade<weapon>', 'knife<weapon>']
 }
 
 
@@ -138,6 +154,26 @@ class Culture(object):
         dungeonName = string.replace( title, "$PP", baseName )
 
         return self.title2(dungeonName)
+
+    def genMacGuffin(self):
+        baseName = self.genNameWithMinMaxLength( 2, 10 )
+        grammar = tracery.Grammar( MACGUFFIN_RULES )
+        grammar.add_modifiers( base_english )
+        title = grammar.flatten( "#origin#")
+        dungeonName = string.replace( title, "$PP", baseName )
+
+        print "------"
+        tags = set()
+        for tag in re.findall( r'\<?([^<]*)\>', dungeonName ):
+            tags.add( tag )
+
+        tags = list(tags)
+        tags.sort
+
+        dungeonName = re.sub( r'\<?([^<]*)\>', '', dungeonName )
+
+        return (self.title2(dungeonName), tags)
+
 
 # Block some frequent, modern words, or weird data in the src data
 BANNED_WORDS = ['mobile home', 'trailer', 'condominium', 'subdivision', 'addition', '9zenic',

@@ -77,8 +77,6 @@ class Scene(object):
         self.node = None
         self.chars = {}
 
-        # todo: events
-
         self.storyText = []
         self.origin = 'TODO'
         self.chapterTitle = "Chapter Title"
@@ -87,6 +85,11 @@ class Scene(object):
 
         self.sceneRules = []
         self.newChars = []
+
+        # Some special flags
+        self.quest = None
+        self.lastDungeon = False
+        self.incitingIncident = False
 
     def addParagraph(self, pptext ):
 
@@ -225,6 +228,7 @@ def sceneIncitingIncident( node, protag ):
     scn.node = node
     scn.chars = { "protag" : protag }
     scn.desc = "Inciting Incident"
+    scn.incitingIncident = True
 
     #TEST -- Replace with inciting scene from quest
     scn.origin = placeholder("#protagName#'s life was about to change in ways #protagThey# never expected")
@@ -405,19 +409,16 @@ def sceneCity( node, protag ):
     if not node.storyVisited:
         scenes += scenePlaceDesc( node, protag )
 
-    scn = Scene()
-    scn.node = node
-    if node.city.dungeon:
-        scn.desc = "Adventure in " + node.city.name
-        scn.origin = placeholder("#protagName# and #aliceName# fought their way through "+node.city.name )
-    elif node.city.port:
+    if node.city.port:
+        scn = Scene()
+        scn.node = node
         scn.desc = "Visit Port town of " + node.city.name
         scn.origin = placeholder("#protagName# visited the port town of " + node.city.name )
-    else:
+    elif not node.city.dungeon:
+        scn = Scene()
+        scn.node = node
         scn.desc = "Visit City " + node.city.name
         scn.origin = placeholder( "#protagName# had some stuff happen in "+ node.city.name )
-
-    scenes.append( scn )
 
     return scenes
 
@@ -459,8 +460,8 @@ class ScenePlaceDesc( Scene ):
             # Description/entrance
             ( 0.99, ['#cityname# was barely more than a speck on the #region#, but spread beneath the #ground# like #fungus#.',
                      'Behind a #natureThing#, #aliceName# spotted the entrance to #cityname#.',
-                     '#cityname# had been left to the #critter.s# for a thousand moons.',
-                     '#cityname# was a forlorn ruin, but it was far from empty.',
+                     '#cityname# had been left to the #critter.s# for #long_time#.',
+                     '#cityname# was a forlorn ruin, abandonded for #long_time#, but it was far from empty.',
                      '"I have a bad feeling about this," muttered #aliceName#, as they approach the entrance to #cityname#.',
                      ] ),
 
@@ -602,8 +603,65 @@ class ScenePlaceDesc( Scene ):
         self.origin = string.join( template, ' ')
         # print self.origin
 
+# -------------------------------------------------------------
+#  Quest Scenes
+# -------------------------------------------------------------
+
+def sceneFinishQuest( qq, node, party ):
+
+    scn = Scene()
+
+    scn.chars = { "protag" : party[0] }
+    scn.desc = "Finish Quest " + qq.desc + " at " + node.city.name
+    scn.chapterTitle = qq.item
+    scn.node = node
+
+    node.storyVisited = True
+
+    return [ scn ]
 
 
+def sceneStartQuest( qq, node, destNode, party ):
+
+    scn = Scene()
+
+    scn.chars = { "protag" : party[0] }
+    placeName = "Wilderness (%s)" % destNode.region.ident
+    if destNode.city:
+        placeName = destNode.city.name
+    scn.desc = "Start Quest " + qq.desc + " in " + placeName
+    scn.chapterTitle = qq.item
+    scn.node = node
+
+    node.storyVisited = True
+
+    return [ scn ]
+
+def sceneRemindQuest( qq, node, destNode, party ):
+
+    scn = Scene()
+
+    scn.chars = { "protag" : party[0] }
+    placeName = "Wilderness (%s)" % destNode.region.ident
+    if destNode.city:
+        placeName = destNode.city.name
+    scn.desc = "Remind Quest " + qq.desc + " in " + placeName
+    scn.chapterTitle = qq.item
+    scn.node = node
+
+    node.storyVisited = True
+
+    return [ scn ]
 
 
+# -------------------------------------------------------------
+#  Combat scene
+# -------------------------------------------------------------
+
+def generateCombatScenes( node ):
+
+        scn = Scene()
+        scn.node = node
+        scn.desc = "Adventure in " + node.city.name
+        scn.origin = placeholder("#protagName# and #aliceName# fought their way through "+node.city.name )
 

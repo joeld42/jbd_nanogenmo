@@ -98,6 +98,7 @@ class City( object ):
 
         self.port = port
         self.dungeon = dungeon
+        self.quest = None
 
         self.size = random.choice(['small', 'medium', 'large'])
 

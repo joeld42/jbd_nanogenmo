@@ -4,7 +4,7 @@ import random
 import tracery
 from tracery.modifiers import base_english
 
-from pulpmill import world, scene, storygen, character, utils
+from pulpmill import world, scene, storygen, character, utils, quest
 
 
 title_rules = {
@@ -77,7 +77,6 @@ class Novel(object):
         # sys.exit(1)
 
 
-
         self.scenes += scene.sceneNormalLife( firstNode, self.protag )
 
         if (utils.randomChance(0.5)):
@@ -86,7 +85,8 @@ class Novel(object):
         # Scramble the prologue scenes
         random.shuffle( self.scenes )
 
-        self.scenes += scene.sceneIncitingIncident( firstNode, self.protag )
+        incitingIncident = scene.sceneIncitingIncident( firstNode, self.protag )
+        self.scenes += incitingIncident
 
         # After this is the first point we can add new characters
         addCharIndex = len(self.scenes)
@@ -111,6 +111,7 @@ class Novel(object):
 
 
         self.currParty = [ self.protag ]
+
 
         # Add/Remove characters from the party
         addCooldown = 0
@@ -144,7 +145,6 @@ class Novel(object):
                 addCooldown -= 1
 
 
-
         # TODO: Here add fight scenes and run battle simulations
 
         # Update party track
@@ -175,6 +175,71 @@ class Novel(object):
             fillerSceneIndex += 1
             if chatCooldown > 0:
                 chatCooldown -= 1
+
+
+        # Add quest scenes to each dungeon
+        for scn in reversed(self.scenes):
+            if scn.node.city and scn.node.city.dungeon:
+                scn.lastDungeon = True
+                break
+
+        dungeonIndex = 0
+        while dungeonIndex < len(self.scenes):
+
+            currScene = self.scenes[dungeonIndex]
+            if currScene.node.city and currScene.node.city.dungeon and not currScene.node.city.quest:
+
+                # It's a dungeon, add a quest and backfill the quest scenes
+                qq = quest.Quest( currScene.node.kingdom.culture )
+                print "GEN QUEST FOR DUNGEON", dungeonIndex, currScene.node.city.name
+                currScene.node.city.quest = qq
+
+                finishQuestScenes = scene.sceneFinishQuest( qq, currScene.node, party )
+
+                for s in finishQuestScenes:
+                    s.party = currScene.party[:]
+
+                self.scenes[dungeonIndex+1:dungeonIndex+1] = finishQuestScenes
+
+                # Start this quest sometime earlier
+                if (currScene.lastDungeon):
+                    # give the quest to the inciting incident
+                    incitingIncident[0].quest = qq
+                    print "Will be main quest"
+                else:
+                    startIndex = random.randint( 1, dungeonIndex-1 )
+
+                    startScene = self.scenes[startIndex]
+                    startQuestScenes = scene.sceneStartQuest( qq, startScene.node, currScene.node, startScene.party )
+                    print "quest starts in ", startScene.node.city.name
+
+                    for s in startQuestScenes:
+                        s.party = startScene.party
+
+                    self.scenes[startIndex+1:startIndex+1] = startQuestScenes
+
+                # Now add some "quest reminder scenes" between start and end
+                remindIndex = startIndex+1
+                remindCooldown = random.randint(3,6)
+                while remindIndex < len(self.scenes):
+                    scn = self.scenes[remindIndex]
+                    if scn is finishQuestScenes[0]:
+                        break
+
+                    if remindCooldown==0 and utils.randomChance(0.3):
+                        # add reminder scene
+                        remindQuestScenes = scene.sceneRemindQuest( qq, scn.node, currScene.node, scn.party )
+                        for s in remindQuestScenes:
+                            s.party = scn.party
+                        self.scenes[remindIndex+1:remindIndex+1] = remindQuestScenes
+                        remindCooldown = random.randint(3,5)
+                    elif remindCooldown > 0:
+                        remindCooldown -= 1
+
+                    remindIndex += 1
+
+            dungeonIndex += 1
+
 
         # Last, generate the title. Right now this is random but it would
         # be cool to use some info from the story
