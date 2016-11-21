@@ -615,6 +615,7 @@ def sceneFinishQuest( qq, node, party ):
     scn.desc = "Finish Quest " + qq.desc + " at " + node.city.name
     scn.chapterTitle = qq.item
     scn.node = node
+    scn.origin = qq.startPhrase
 
     node.storyVisited = True
 
@@ -632,6 +633,7 @@ def sceneStartQuest( qq, node, destNode, party ):
     scn.desc = "Start Quest " + qq.desc + " in " + placeName
     scn.chapterTitle = qq.item
     scn.node = node
+    scn.origin = qq.startPhrase
 
     node.storyVisited = True
 
@@ -648,6 +650,7 @@ def sceneRemindQuest( qq, node, destNode, party ):
     scn.desc = "Remind Quest " + qq.desc + " in " + placeName
     scn.chapterTitle = qq.item
     scn.node = node
+    scn.origin = "Placeholder: #protagName# thought about #questItem#."
 
     node.storyVisited = True
 

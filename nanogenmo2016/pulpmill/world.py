@@ -462,32 +462,60 @@ class World(object):
 
         cities = filter( lambda n: n.city and n.nodeType==TerrainType_LAND and not n.city.dungeon and len(n.arcs)>1, self.nodes )
 
-        retryCount = 0
-        while 1:
-            startCity = random.choice( cities )
-            print "MakestoryPath: start/end in ", startCity.city.name, "storyDungeons", storyDungeons
 
-            self.clearVisited()
-            self.dbg_bestSoFar = 999
-            self.dbg_count = 0
-            storyPath = self.findStoryPath( startCity, startCity, storyDungeons, [] )
+        # Path gen is kind of wonky, sometimes it takes a long time and/or
+        # might not finish. For faster iteration during development the
+        # fast, fake path will just make a random path ignoring connectivity
+        doFastFakePage = True
+        if not doFastFakePage:
 
-            if storyPath and storyPath[0]:
-                retryCount += 1
-                if retryCount > 3 and storyDungeons > 2:
-                    # Try fewer dungeons if this is too hard
-                    storyDungeons -= 1
+            retryCount = 0
+            while 1:
+                startCity = random.choice( cities )
+                print "MakestoryPath: start/end in ", startCity.city.name, "storyDungeons", storyDungeons
 
-                break
+                self.clearVisited()
+                self.dbg_bestSoFar = 999
+                self.dbg_count = 0
+                storyPath = self.findStoryPath( startCity, startCity, storyDungeons, [] )
+
+                if storyPath and storyPath[0]:
+                    retryCount += 1
+                    if retryCount > 3 and storyDungeons > 2:
+                        # Try fewer dungeons if this is too hard
+                        storyDungeons -= 1
+
+                    break
+        else:
+            # Fast fake path
+            dungeons = filter( lambda n: n.city and n.nodeType==TerrainType_LAND and n.city.dungeon, self.nodes )
+            cities2 = cities[:]
+
+            random.shuffle( dungeons )
+            random.shuffle( cities2 )
+
+            storyPath1 = dungeons[:storyDungeons] + cities2[:random.randint(10,15)]
+            random.shuffle( storyPath1 )
+
+            storyPath = []
+            for n in storyPath1:
+                storyPath.append( n )
+                storyPath.append( random.choice( n.arcs ))
+
 
         # Close path
         storyPath.append( storyPath[0])
 
-        print "findStoryPath, result:"
+        print "findStoryPath, result: (%d steps)" % len(storyPath)
 
         first = True
         steps = 0
         lastStep = TerrainArc_ROAD
+
+        cityCount = 0
+        dungeonCount = 0
+        arcCount = 0
+
         for step in storyPath:
             if isinstance( step, TerrainArc):
                 step.onStoryPath = True
@@ -495,6 +523,7 @@ class World(object):
                 lastStep = step.arcType
 
             if isinstance( step, TerrainNode):
+                arcCount += 1
                 if step.city:
                     if steps > 0:
                         if lastStep == TerrainArc_ROAD:
@@ -504,14 +533,18 @@ class World(object):
                             print "Take an ocean voyage."
                     steps = 0
                     if step.city.dungeon:
+                        dungeonCount += 1
                         print "Adventure at", step.city.name
                     else:
+                        cityCount += 1
                         if first:
                             print "Start at", step.city.name
                         else:
                             print "Visit",step.city.name
 
             first = False
+
+        print "StoryPath: %d arcs %d cities %d dungeons" % ( arcCount, cityCount, dungeonCount )
 
         # Save the storypath for the novel
         self.storyPath = storyPath
