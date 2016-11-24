@@ -494,8 +494,13 @@ class World(object):
             random.shuffle( dungeons )
             random.shuffle( cities2 )
 
+            # ensure first few cities are not dungeons
+            startingCities = cities2[:3]
+            cities2 = cities2[3:]
+
             storyPath1 = dungeons[:storyDungeons] + cities2[:random.randint(10,15)]
             random.shuffle( storyPath1 )
+            storyPath = startingCities + storyPath1
 
             storyPath = []
             for n in storyPath1:

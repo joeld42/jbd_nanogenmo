@@ -193,6 +193,7 @@ class Novel(object):
                 qq = quest.Quest( currScene.node.kingdom.culture )
                 print "GEN QUEST FOR DUNGEON", dungeonIndex, currScene.node.city.name
                 currScene.node.city.quest = qq
+                qq.destCity = currScene.node
 
                 finishQuestScenes = scene.sceneFinishQuest( qq, currScene.node, party )
 
@@ -201,17 +202,29 @@ class Novel(object):
 
                 self.scenes[dungeonIndex+1:dungeonIndex+1] = finishQuestScenes
 
+                # Precede with combat scenes
+                print "--- blah combat"
+                fightScenes = scene.generateCombatScenes( currScene.party, 1, currScene.node )
+                for s in fightScenes:
+                    s.party = currScene.party[:]
+                self.scenes[dungeonIndex:dungeonIndex] = fightScenes
+
                 # Start this quest sometime earlier
                 if (currScene.lastDungeon):
                     # give the quest to the inciting incident
                     incitingIncident[0].quest = qq
                     print "Will be main quest"
+                    qq.startCity = incitingIncident[0].node
                 else:
-                    startIndex = random.randint( 1, dungeonIndex-1 )
+
+                    if dungeonIndex > 1:
+                        startIndex = random.randint( 1, dungeonIndex-1 )
+                    else:
+                        startIndex = 1
 
                     startScene = self.scenes[startIndex]
                     startQuestScenes = scene.sceneStartQuest( qq, startScene.node, currScene.node, startScene.party )
-                    print "quest starts in ", startScene.node.city.name
+                    qq.startCity = startScene.node
 
                     for s in startQuestScenes:
                         s.party = startScene.party

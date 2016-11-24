@@ -31,14 +31,17 @@ NAME_RULES = {
 
 class CharacterClass( object ):
 
-    def __init__(self, rpgClass ):
+    def __init__(self, rpgClass, rules ):
         self.rpgClass = rpgClass
+        self.rules = rules
 
-    def getCharClassRules(self ):
+    def getCharClassRules(self):
 
         charClassRules = {
             'ROLEClass' : self.rpgClass
         }
+
+        charClassRules.update( self.rules )
 
         return charClassRules
 
@@ -47,41 +50,47 @@ def setupRpgClasses():
 
     rpgClasses = []
 
-    cc = CharacterClass( 'Barbarian')
+    cc = CharacterClass( 'Barbarian',
+                         {
+                             'weapon' : ['battle-axe', 'great sword'],
+                             'attack' : [ '#ROLEName# swung #ROLETheir# #weapon# and struck the #enemy#.'],
+                             'block'  : ['#ROLEName# blocked it with #ROLETheir# bare hands.']
+                         })
     rpgClasses.append(cc)
 
-    cc = CharacterClass( 'Bard')
-    rpgClasses.append(cc)
-
-    cc = CharacterClass( 'Cleric')
-    rpgClasses.append(cc)
-
-    cc = CharacterClass( 'Druid')
-    rpgClasses.append(cc)
-
-    cc = CharacterClass( 'Fighter')
-    rpgClasses.append(cc)
-
-    cc = CharacterClass( 'Mage')
-    rpgClasses.append(cc)
-
-    cc = CharacterClass( 'Monk')
-    rpgClasses.append(cc)
-
-    cc = CharacterClass( 'Paladin')
-    rpgClasses.append(cc)
-
-    cc = CharacterClass( 'Ranger')
-    rpgClasses.append(cc)
-
-    cc = CharacterClass( 'Thief')
-    rpgClasses.append(cc)
-
-    cc = CharacterClass( 'Witch')
-    rpgClasses.append(cc)
-
-    cc = CharacterClass( 'Elementalist')
-    rpgClasses.append(cc)
+    # cc = CharacterClass( 'Bard',
+    #                      )
+    # rpgClasses.append(cc)
+    #
+    # cc = CharacterClass( 'Cleric')
+    # rpgClasses.append(cc)
+    #
+    # cc = CharacterClass( 'Druid')
+    # rpgClasses.append(cc)
+    #
+    # cc = CharacterClass( 'Fighter')
+    # rpgClasses.append(cc)
+    #
+    # cc = CharacterClass( 'Mage')
+    # rpgClasses.append(cc)
+    #
+    # cc = CharacterClass( 'Monk')
+    # rpgClasses.append(cc)
+    #
+    # cc = CharacterClass( 'Paladin')
+    # rpgClasses.append(cc)
+    #
+    # cc = CharacterClass( 'Ranger')
+    # rpgClasses.append(cc)
+    #
+    # cc = CharacterClass( 'Thief')
+    # rpgClasses.append(cc)
+    #
+    # cc = CharacterClass( 'Witch')
+    # rpgClasses.append(cc)
+    #
+    # cc = CharacterClass( 'Elementalist')
+    # rpgClasses.append(cc)
 
 
     return rpgClasses
@@ -95,6 +104,7 @@ class Character( object ):
         self.homenode = homenode
         self.hometown = homenode.city
         self.culture = self.hometown.kingdom.culture
+        self.hp = 3
 
         if not Character._rpgClasses:
             Character._rpgClasses = setupRpgClasses()

@@ -282,6 +282,9 @@ class Typesetter(FPDF):
                 if not pp or pp=='TODO':
                     continue
 
+                # Remove newlines and extra spaces
+                pp = pp.strip().replace( "\n", " " )
+
                 self.multi_cell( 0, 5, "       " + pp )
 
 

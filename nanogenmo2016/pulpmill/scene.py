@@ -6,7 +6,7 @@ import utils
 import tracery
 from tracery.modifiers import base_english
 
-from pulpmill import world, utils, character
+from pulpmill import world, utils, character, combat
 
 # TODO List for scene types
 # Scene Type        Placeholder  Text
@@ -17,10 +17,11 @@ from pulpmill import world, utils, character
 #  Sea Voyage           [X]       [ ]
 #  Add Character        [X]       [ ]
 #  Encounter Outdoor    [ ]       [ ]
+#  Dungeon Desc         [X]       [ ]
 #  Dungeon Filler       [ ]       [ ]
-#  Dialogue Filler      [ ]       [ ]
-#  Quest: Setup         [ ]       [ ]
-#  Quest: Resolve       [ ]       [ ]
+#  Dialogue Filler      [X]       [ ]
+#  Quest: Setup         [X]       [ ]
+#  Quest: Resolve       [X]       [ ]
 #  Epic: Return         [ ]       [ ]
 
 
@@ -607,15 +608,36 @@ class ScenePlaceDesc( Scene ):
 #  Quest Scenes
 # -------------------------------------------------------------
 
+class SceneQuest( Scene ):
+
+    def __init__(self, qq ):
+
+        super(SceneQuest,self).__init__()
+        self.quest = qq
+
+    def generate( self, sg ):
+
+        # Add quest rules
+        questRules = {
+            "questItem" : self.quest.item,
+            "startCity" : self.quest.startCity.city.name,
+            "destCity" : self.quest.destCity.city.name,
+            "questGiver" : "TODO:questGiver"
+        }
+
+        self.sceneRules.update( questRules )
+
+        super(SceneQuest,self).generate( sg )
+
 def sceneFinishQuest( qq, node, party ):
 
-    scn = Scene()
+    scn = SceneQuest(qq)
 
     scn.chars = { "protag" : party[0] }
     scn.desc = "Finish Quest " + qq.desc + " at " + node.city.name
     scn.chapterTitle = qq.item
     scn.node = node
-    scn.origin = qq.startPhrase
+    scn.origin = qq.finishPhrase
 
     node.storyVisited = True
 
@@ -624,7 +646,7 @@ def sceneFinishQuest( qq, node, party ):
 
 def sceneStartQuest( qq, node, destNode, party ):
 
-    scn = Scene()
+    scn = SceneQuest(qq)
 
     scn.chars = { "protag" : party[0] }
     placeName = "Wilderness (%s)" % destNode.region.ident
@@ -641,7 +663,7 @@ def sceneStartQuest( qq, node, destNode, party ):
 
 def sceneRemindQuest( qq, node, destNode, party ):
 
-    scn = Scene()
+    scn = SceneQuest(qq)
 
     scn.chars = { "protag" : party[0] }
     placeName = "Wilderness (%s)" % destNode.region.ident
@@ -661,10 +683,57 @@ def sceneRemindQuest( qq, node, destNode, party ):
 #  Combat scene
 # -------------------------------------------------------------
 
-def generateCombatScenes( node ):
+def generateCombatScenes( party, level, node ):
 
-        scn = Scene()
-        scn.node = node
-        scn.desc = "Adventure in " + node.city.name
-        scn.origin = placeholder("#protagName# and #aliceName# fought their way through "+node.city.name )
+    scn = SceneCombat( level )
+    scn.node = node
+    scn.party = party
+
+    scn.desc = "Adventure in " + node.city.name
+    scn.origin = placeholder("#protagName# and #aliceName# fought their way through "+node.city.name )
+
+    # Simulate the scenes
+    scn.simulate()
+
+    return [ scn ]
+
+class SceneCombat( Scene ):
+
+    def __init__(self, level ):
+
+        super(SceneCombat,self).__init__()
+        self.level = level
+        self.csim = None
+
+    def simulate(self ):
+        # test combat
+        self.csim = combat.CombatSimulator( self.party, self.level, self.node )
+
+        self.csim.setupFight( self.node )
+
+        # Step combat until all creatures are dead
+        while 1:
+            if self.csim.stepCombat( self ):
+                break
+
+            # TODO: Add some random stuff here
+
+
+    def generate( self, sg ):
+
+        print "TODO: CombatScene generate"
+        monsters = self.csim.monsters
+        mname = []
+        for m in monsters:
+            mname.append( m.name )
+
+        mdesc = "Fight against " + ", ".join( mname )
+        self.addParagraph( mdesc )
+        print mdesc
+
+        # Here -- emit self.csim actions
+        for act in self.csim.combatActions:
+            scn, hero, monster, startrule = act
+            self.csim.genCombatAction( self, hero, monster, startrule )
+
 
