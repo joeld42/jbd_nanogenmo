@@ -695,7 +695,7 @@ def generateCombatScenes( party, level, node ):
     # Simulate the scenes
     scn.simulate()
 
-    return [ scn ]
+    return [ scn ], scn.csim.deadHeros
 
 class SceneCombat( Scene ):
 
@@ -709,7 +709,7 @@ class SceneCombat( Scene ):
         # test combat
         self.csim = combat.CombatSimulator( self.party, self.level, self.node )
 
-        self.csim.setupFight( self.node )
+        self.csim.setupFight( self.node, self.party )
 
         # Step combat until all creatures are dead
         while 1:
@@ -719,15 +719,24 @@ class SceneCombat( Scene ):
             # TODO: Add some random stuff here
 
 
+
+
+
     def generate( self, sg ):
 
-        print "TODO: CombatScene generate"
         monsters = self.csim.monsters
         mname = []
         for m in monsters:
             mname.append( m.name )
 
         mdesc = "Fight against " + ", ".join( mname )
+
+        mdesc = mdesc + ". Party is: "
+        for h in self.party:
+            mdesc += h.name
+            mdesc += ", "
+
+
         self.addParagraph( mdesc )
         print mdesc
 

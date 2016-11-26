@@ -168,6 +168,8 @@ class StoryGen(object):
                 'type_of_elves' : ['#magic_nature# elves', 'druids' ],
 
                 # Descriptive Nonsense
+                'purple' : ['golden', 'shimmering', 'purple', '#purple# and #purple',
+                            'fiery', 'auburn'],
                 'fungus' : ['fungus', 'root system', "vole's burrow" ],
                 'bad_vibe' : ['oppressive', 'claustrophobic', 'empty', 'gloomy', 'foreboding' ],
                 'long_time' : ['a #thousand# #years#', "#ages#", "since before #the_past#"],
@@ -175,6 +177,12 @@ class StoryGen(object):
                 'years' : ['moons', 'years', 'seasons' ],
                 'thousand' : ['thousand', 'hundred', 'uncounted' ],
                 'the_past' : ['the great war', 'the age of man', 'recorded history', 'living memory'],
+                'in_the_distance' : ['in the distance', 'on the horizon', 'across the sky', 'behind them',
+                                     'above them', 'toward the heavens'],
+                'moodLighting' : ['The sunset was #purple# #in_the_distance#.',
+                                  '#purple.capitalize# clouds hung #in_the_distance#.',
+                                  'The #weather_adj# air looked #purple#.'
+                                  ],
 
                 # Deep Thoughts
                 'wondered' : ['wondered about', 'pondered', 'considered', 'thought about'],

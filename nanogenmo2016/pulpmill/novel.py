@@ -203,11 +203,17 @@ class Novel(object):
                 self.scenes[dungeonIndex+1:dungeonIndex+1] = finishQuestScenes
 
                 # Precede with combat scenes
-                print "--- blah combat"
-                fightScenes = scene.generateCombatScenes( currScene.party, 1, currScene.node )
+                fightScenes, deadHeros = scene.generateCombatScenes( currScene.party, 1, currScene.node )
                 for s in fightScenes:
                     s.party = currScene.party[:]
-                self.scenes[dungeonIndex:dungeonIndex] = fightScenes
+                self.scenes[dungeonIndex+1:dungeonIndex+1] = fightScenes
+
+                # Walk forward and remove dead heros
+                for index in range(dungeonIndex+1, len(self.scenes)):
+                    s = self.scenes[index]
+                    for dh in deadHeros:
+                        if dh in s.party:
+                            s.party.remove( dh )
 
                 # Start this quest sometime earlier
                 if (currScene.lastDungeon):
@@ -283,6 +289,8 @@ class Novel(object):
             wordCountTot += scn.wordCount
 
             print "-", scn.desc, "("+scn.chapterTitle, scn.wordCount, "words)"
+            partyNames = map( lambda x: x.name, scn.party )
+            print "  ", ', '.join( partyNames )
             for pp in scn.storyText:
                 print pp
                 print
