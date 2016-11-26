@@ -716,7 +716,7 @@ class SceneCombat( Scene ):
             if self.csim.stepCombat( self ):
                 break
 
-            # TODO: Add some random stuff here
+            self.csim.combatFiller( self )
 
 
 
