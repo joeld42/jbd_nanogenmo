@@ -184,6 +184,11 @@ class StoryGen(object):
                                   'The #weather_adj# air looked #purple#.'
                                   ],
 
+                # Misc
+                'said' : ['said', 'cried', 'yelled', 'exclaimed', 'whispered', 'suggested', 'whimpered'],
+                'silly_exclaim' : [ "Whatever!", "Oh Hells", "Yipes", "Why not?", "Zoinks", "AaaAaaaaaAA",
+                                    "Holy Guacamole", "Oh Fudge it!"],
+
                 # Deep Thoughts
                 'wondered' : ['wondered about', 'pondered', 'considered', 'thought about'],
                 'the_future' : [ 'the future', '#protagTheir# future', 'what was coming', '#protagTheir# next steps',

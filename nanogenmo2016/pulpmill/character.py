@@ -15,7 +15,7 @@ from pulpmill import world
 
 TWITTER_FOLKS = [
     "Booyah",  # @booyaa
-    "Cindee", # @rgrrl
+    "Cinder", # @rgrrl
     "Blackle Mori",  # @blacklemon67
     "Jovoc", # @joeld42
     "Zecmo", # @zecmo,
@@ -31,9 +31,10 @@ NAME_RULES = {
 
 class CharacterClass( object ):
 
-    def __init__(self, rpgClass, rules ):
+    def __init__(self, rpgClass, weapons, rules ):
         self.rpgClass = rpgClass
         self.rules = rules
+        self.rules['weapon'] = random.choice( weapons )
 
     def getCharClassRules(self):
 
@@ -50,18 +51,29 @@ def setupRpgClasses():
 
     rpgClasses = []
 
-    cc = CharacterClass( 'Barbarian',
+    cc = CharacterClass( 'Barbarian', ['battle-axe', 'great sword', 'halbard', 'pole-arm' ],
                          {
-                             'weapon' : ['battle-axe', 'great sword'],
-                             'attack' : [ '#ROLEName# swung #ROLETheir# #weapon# and struck the #enemy#.'],
+                             'attack' : [ '#ROLEName# swung #ROLETheir# #weapon# at #monsterName#'],
                              'block'  : ['#ROLEName# blocked it with #ROLETheir# bare hands.']
                          })
     rpgClasses.append(cc)
 
-    # cc = CharacterClass( 'Bard',
-    #                      )
-    # rpgClasses.append(cc)
-    #
+    cc = CharacterClass( 'Bard', ['lute', 'lyre', 'flute', 'harp', 'panpipe', 'bagpipe' ],
+                         {
+                             'attack' : [ '#ROLEName# played a jaunty tune on the #weapon# and it dazed #monsterName#',
+                                          '#ROLEName# #said#, "#silly_exclaim#", and smacked #monsterName# with the #weapon#',
+                                          '"Music," #said# #ROLEName#, "can tame the savage #monsterName#!" ',
+                                          '#ROLEName# raised #ROLETheir# #weapon#. #ROLEThey# hit the '+
+                                            'brown note, and the #monsterName# was gravely moved',
+                                          '#ROLEName# played an old melody, an enchanted tune on '+
+                                            'the #weapon# and the #monsterName# #m_moved# helplessly and was knocked back,'
+                                          ],
+                             'block'  : [ '"#silly_exclaim#", #said# #ROLEName#, and blocked the #monsterName# with #ROLETheir# #weapon#',
+                                          "#ROLEName# played a bizarre arpeggio on the #weapon# and it confused the #monsterName#"
+                                        ],
+                                })
+    rpgClasses.append(cc)
+
     # cc = CharacterClass( 'Cleric')
     # rpgClasses.append(cc)
     #
@@ -159,7 +171,13 @@ class Character( object ):
 
             # fixme: make this handle lists as well as strings
             key2 = key.replace( 'ROLE', role )
-            charRules2[key2] = item
+            if isinstance( item, basestring):
+                item2 = item.replace( 'ROLE', role )
+            else:
+                item2 = map( lambda x: x.replace('ROLE', role ), item )
+            charRules2[key2] = item2
+
+
 
         return charRules2
 

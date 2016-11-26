@@ -92,7 +92,8 @@ class Scene(object):
         self.lastDungeon = False
         self.incitingIncident = False
 
-    def addParagraph(self, pptext ):
+
+    def checkPPText(self, pptext ):
 
         if pptext.find('((') != -1 and pptext.find('))') != -1:
             print "StoryText: ", pptext
@@ -104,6 +105,21 @@ class Scene(object):
                 print "No region..."
 
             raise Exception( "StoryError", "Found unexpanded rules in story text")
+
+    def growParagraph(self, pptext ):
+
+        self.checkPPText( pptext )
+
+        if len(self.storyText[-1]) < 150:
+            self.storyText[-1] = self.storyText[-1] + " " + pptext
+        else:
+            self.storyText.append( pptext )
+
+        self.wordCount += len( string.split( pptext ))
+
+    def addParagraph(self, pptext ):
+
+        self.checkPPText( pptext )
 
         self.storyText.append( pptext )
         self.wordCount += len( string.split( pptext ))
