@@ -41,9 +41,9 @@ class Novel(object):
         self.cultures = cultures
         self.scenes = []
 
-    def generate(self):
-
         self.sg = storygen.StoryGen()
+
+    def generate(self):
 
         self.map = world.World( self.cultures, self.sg )
         self.map.buildMap()

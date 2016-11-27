@@ -18,6 +18,7 @@ class StoryGen(object):
     _common = None
     _region = None
     _tarot = None
+    _colorSchemes = None
 
     def __init__(self):
         pass
@@ -39,6 +40,14 @@ class StoryGen(object):
                     StoryGen._tarot = data['tarot_interpretations']
 
         return StoryGen._tarot
+
+    def getColorSchemes(self):
+        if not StoryGen._colorSchemes:
+            with open( os.path.join( CORPORA_ROOT, 'data', 'colors', 'palettes.json') ) as datafile:
+                data = json.load(datafile)
+                StoryGen._colorSchemes = data['palettes']
+
+        return StoryGen._colorSchemes
 
     def getKingdomRules(self, kingdom ):
 

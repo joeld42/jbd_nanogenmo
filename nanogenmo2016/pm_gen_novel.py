@@ -9,6 +9,15 @@ from pulpmill import *
 
 if __name__=='__main__':
 
+    novel = novel.Novel([])
+    title = novel.genTitle()
+
+    colorScheme = random.choice( novel.sg.getColorSchemes() )
+
+    cover.genCover( title, "Author Name", "Book 1 in the Snow Dragon Saga",
+                    colorScheme )
+    sys.exit(1)
+
     culture.setupCultures()
 
     # Test generator

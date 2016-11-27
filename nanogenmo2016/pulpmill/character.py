@@ -77,9 +77,17 @@ def setupRpgClasses():
     # cc = CharacterClass( 'Cleric')
     # rpgClasses.append(cc)
     #
-    # cc = CharacterClass( 'Druid')
-    # rpgClasses.append(cc)
-    #
+    cc = CharacterClass( 'Druid', ['tree branch', 'staff', 'Druid Staff', 'quarterstaff', "bird's nest" ],
+                         {
+                             'attack' : [ "#ROLEName# struck with #ROLETheir# #weapon#",
+                                          "#ROLEName# draw upon the power of nature with #ROLETheir# #weapon#",
+                                          "The spirits of the forest inhabited #ROLEName#'s #weapon#",
+                                          "#ROLEName# cast entangle, and brambles grew to cover #monsterName#"
+                                          ],
+                             'block'  : ['#ROLEName# blocked it with #ROLETheir# bare hands.']
+                         })
+    rpgClasses.append(cc)
+
     # cc = CharacterClass( 'Fighter')
     # rpgClasses.append(cc)
     #

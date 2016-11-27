@@ -110,7 +110,7 @@ class Scene(object):
 
         self.checkPPText( pptext )
 
-        if len(self.storyText[-1]) < 150:
+        if len(self.storyText[-1]) < 250:
             self.storyText[-1] = self.storyText[-1] + " " + pptext
         else:
             self.storyText.append( pptext )
@@ -743,18 +743,47 @@ class SceneCombat( Scene ):
         monsters = self.csim.monsters
         mname = []
         for m in monsters:
-            mname.append( m.name )
+            mname.append( m )
 
-        mdesc = "Fight against " + ", ".join( mname )
+        random.shuffle( mname )
 
-        mdesc = mdesc + ". Party is: "
-        for h in self.party:
-            mdesc += h.name
-            mdesc += ", "
+        intro = random.choice([
+            "Around a corner, they ran into trouble.",
+            "Soon their fears were manifest.", "There were monsters ahead.",
+            "Their passage was blocked.", "They were not alone.", "Things went from bad to worse.",
+            "They braced for a fight.", "Ahead, there was a problem."
+        ])
+        self.addParagraph( intro )
 
+        seenMonsters = set()
+        for m in mname:
 
-        self.addParagraph( mdesc )
-        print mdesc
+            if m.name in seenMonsters:
+                monsterName = random.choice( ["another", "one more", "an additional", "a second", "an extra" ] ) + m.name
+            else:
+                monsterName = "a " + m.name
+                seenMonsters.add( m.name )
+
+            if m.leader:
+                statement = random.choice([
+                    "Their leader was a %s.", "They were lead by a %s.", "A %s called the shots.",
+                    "A %s was in charge of them all.", "They served the %s.",
+                    "A %s was their leader.", "The biggest was a %s", "The fiercest of all, a %s."
+                ]) % m.name
+            else:
+                statement = random.choice([
+                    "%s crouched by a wall", "%s faced the group.", "%s scuttled behind the rest.",
+                    "There was %s.", "%s was ready to fight.", "There was %s.",
+                    "%s glared at them.", "%s was pure evil.", "%s rounded out the cadre.",
+                    "%s was maybe the worst of them.", "%s, and it looked hungry.",
+                    "%s, ready for battle.", "Don't forget about %s.", "%s was across the cobbles.",
+                    "%s jeered at them.", "%s licked it's jowls.", "%s glared fiercely.",
+                    "%s posed a serious threat."
+                ]) % monsterName
+
+            statement = statement.capitalize() + " "
+
+            self.growParagraph( statement )
 
         # Here -- emit self.csim actions
         for act in self.csim.combatActions:
