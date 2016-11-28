@@ -1,0 +1,1 @@
+This is a free font from Gregfonts...http://pw1.netcom.com/~gmeronek/fonts.html. Use it well, and distribute it often. Only don't sell it or something fru-fru like that.
