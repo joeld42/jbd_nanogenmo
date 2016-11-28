@@ -31,8 +31,12 @@ class Typesetter(FPDF):
     def doTitlePage(self):
 
         self.add_page()
-        self.set_font('Arial', 'B', 14)
-        self.cell(self.w - (self.l_margin + self.r_margin), 24, self.novel.title, 1, 1, 'C' )
+        if self.novel.coverImage:
+            self.image( self.novel.coverImage, 0, 0, self.w, self.h )
+        else:
+            # Skipping cover image, just the title
+            self.set_font('Arial', 'B', 14)
+            self.cell(self.w - (self.l_margin + self.r_margin), 24, self.novel.title, 1, 1, 'C' )
 
     # Stupid fpdf can't draw a polygon
     def polygon(self, pnts, style=''):
@@ -290,19 +294,52 @@ class Typesetter(FPDF):
 
     def typesetNovel(self, filename ):
 
-        #self.doTitlePage()
+        self.doTitlePage()
 
         self.doMapPage( "politics")
         self.doMapPage( "travel")
         self.doMapPage( "terrain")
 
-        # TODO: break into chapters smarer
         scenes = self.novel.scenes[:]
-        chapterNum = 1
-        self.startChapter( "Chapter %d" % chapterNum )
-        while len(scenes):
-            scn = scenes.pop(0)
-            self.emitScene( scn )
+
+        chapters = []
+
+        # Should be around 1000-2500 words..
+        chapterWordLimit = 500
+
+        currScenes = []
+        currTitles = []
+        chapterWords = 0
+        for scn in scenes:
+            title = scn.chapterTitle
+            currTitles.append( (scn.wordCount, title))
+
+            currScenes.append( scn )
+            chapterWords += scn.wordCount
+
+            if chapterWords > chapterWordLimit:
+
+                currTitles.sort()
+                currTitles.reverse()
+                chapterTitle = random.choice( currTitles[:10])
+
+                # print "Add Chapter ", len(chapters) + 1, chapterTitle
+                chapters.append( (chapterTitle[1], currScenes[:]) )
+
+                currScenes = []
+                chapterWords = 0
+                currTitles = []
+
+
+        for chapterNum, chapInfo in enumerate(chapters):
+            # print chapterNum
+            # print chapInfo
+            title, chapScenes = chapInfo
+            # chapterNum = 1
+            self.startChapter( "%d. %s" % (chapterNum+1, title) )
+            while len(chapScenes):
+                scn = chapScenes.pop(0)
+                self.emitScene( scn )
 
 
         self.output( filename )

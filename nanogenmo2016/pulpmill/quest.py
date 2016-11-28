@@ -17,7 +17,31 @@ class Quest(object):
         self.startPhrase, self.finishPhrase = self.getPhrases()
 
         self.startCity = None
+
         self.destCity = None
+
+    def getReminder(self):
+
+        remindPhrases = [
+            "#protagName# thought about the #questItem#, and all the trouble it had brought into "+
+            "#protagTheir# life. Soon, this would be over.",
+            "#protagName# thought about the #questItem#. #protagThey# was sure they would reach #destCity#."
+        ]
+
+        if self.questType==QuestType_DESTROY_ITEM:
+            remindPhrases += [
+                "#protagName#'s fingers wandered to the #questItem#. It felt heavy to #protagThem#, "+
+                "heavier than it should be.",
+
+                "#protagName# would be glad when #questItem# was destroyed."
+            ]
+        elif self.questType==QuestType_RETRIEVE_ITEM:
+            remindPhrases += [
+                "The #questItem#. That would fix this. #protagName# felt sure of this.",
+                "If only they had the #questItem#.",
+                    ]
+
+        return random.choice( remindPhrases )
 
     def getPhrases(self):
 

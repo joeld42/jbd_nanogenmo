@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, string
 import random
 
 def randomChance( pct ):
@@ -30,6 +30,22 @@ def randomChoiceWeighted( itemDict ):
 def lerp( a, b, t ):
 
     return tuple(map( lambda x: x[0]*(1.0-t) + x[1]*t, zip(a,b)))
+
+def title2(s):
+        # like title() but better
+        s2 = []
+        for p in string.split(s,' '):
+
+            if not p in ["on", "of", "a", "the", "to", 'II', 'III', 'IV']:
+                p = p.capitalize()
+
+            s2.append(p)
+
+        # Always cap the first word
+        s2[0] = s2[0].capitalize()
+
+        return ' '.join(s2)
+
 
 def addSentencesWithChances( sentenceList, ensureNonEmpty=True ):
         """

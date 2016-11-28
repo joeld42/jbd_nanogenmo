@@ -439,7 +439,10 @@ def genCover( title, author, subtitle, colorScheme ):
     subtitleColor = template.get('subtitleColor', subtitleColor )
     drawCoverText( draw, subtitle, subtitleFont, subtitleColor,borderCol, template['subtitle_rect'] )
 
-    coverImage.save("testcover.png")
+    coverImageName = "cover_pic.png"
+    coverImage.save(coverImageName )
+
+    return coverImageName
 
 # import cairocffi as cairo
 #

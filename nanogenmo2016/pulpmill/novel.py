@@ -13,15 +13,22 @@ title_rules = {
     'title' : ['#a_conflict# #preposition# #desc_context#', '#a_and_b#',
                 'the #desc_context#'],
 
-    'subtitle' : [ 'book #num# of #series#', '#sequel_stmt#'],
+    'subtitle' : [ 'book #num# of #series#', '#sequel_stmt#',
+                   'the #epic# #journey# of #protagName# the #protagClass#'],
     'sequel_stmt' : [ 'The #super# #sequel# to "#title#"',
                    'The #sequel# to the #super# #novel# "#title#"' ],
     'super' : ['long-awaited', 'bestselling', 'enchanting', 'award-winning'],
     'novel' : ['novel', 'masterpiece', 'saga'],
+    'epic' : ['epic', 'amazing', 'enthralling', 'exciting'],
     'sequel' : ['sequel', 'follow-up', 'conclusion', 'prequel', 'predecessor'],
     'series' : [ 'the #desc_context# #saga#'],
     'saga' : ['saga', 'series', 'cycle', 'chronicles'],
-    'num' : ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'nine', 'fifteen'],
+    'journey' : ['journey', 'voyage', 'adventure'],
+    'num' : [ '2', '3', '5', '7', 'one', 'two', 'three', 'four', 'five',
+              'six', 'seven', 'nine', 'fifteen', 'twelve',
+             'II', 'III', 'IV' ],
+    'protagName' : 'a hero',
+    'protagClass' : 'adventurer',
 
     'a_and_b' : [ 'the #context# and the #desc_context#', 'of #context# and #context#',
                   '#context# and #context#'],
@@ -178,6 +185,7 @@ class Novel(object):
     def __init__(self, cultures):
         self.cultures = cultures
         self.scenes = []
+        self.coverImage = None
 
         self.sg = storygen.StoryGen()
 
@@ -400,7 +408,12 @@ class Novel(object):
 
         # Last, generate the title. Right now this is random but it would
         # be cool to use some info from the story
+        title_rules['protagName'] = self.protag.name
+        title_rules['protagClass'] = self.protag.rpgClass.rpgClass
+
         self.title = self.genTitle()
+        self.subtitle = self.genSubtitle()
+        self.author = self.genAuthor()
 
         # Do some sanity checks
         for scn in self.scenes:
@@ -447,14 +460,14 @@ class Novel(object):
     def genTitle(self):
         grammar = tracery.Grammar( title_rules )
         grammar.add_modifiers( base_english )
-        title = grammar.flatten( "#origin#").title()
+        title = utils.title2( grammar.flatten( "#origin#") )
 
         return title
 
     def genSubtitle(self):
         grammar = tracery.Grammar( title_rules )
         grammar.add_modifiers( base_english )
-        subtitle = grammar.flatten( "#subtitle#").title()
+        subtitle = utils.title2( grammar.flatten( "#subtitle#") )
 
         return subtitle
 

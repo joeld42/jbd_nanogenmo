@@ -148,6 +148,12 @@ class Scene(object):
             #print role, char.name
             self.chars[role] = char
 
+        # HACK -- make sure there are enough chars. fix  make scenes
+        # only emit with enough ppl
+        for role in charRoles:
+            if not self.chars.has_key( role):
+                self.chars[role] = protag
+
 
         # Add character rules
         for role,char in self.chars.iteritems():
@@ -178,8 +184,15 @@ class Scene(object):
         grammar = tracery.Grammar( self.sceneRules )
         grammar.add_modifiers( base_english )
 
-        pp = grammar.flatten( "#origin#" )
-        self.addParagraph( pp )
+        try:
+            pp = grammar.flatten( "#origin#" )
+            self.addParagraph( pp )
+
+        except:
+            print "Tracery error, failed to expand #origin#"
+            print self.sceneRules
+
+            sys.exit(1)
 
 
     def doGenerate(self, sg ):
@@ -688,7 +701,7 @@ def sceneRemindQuest( qq, node, destNode, party ):
     scn.desc = "Remind Quest " + qq.desc + " in " + placeName
     scn.chapterTitle = qq.item
     scn.node = node
-    scn.origin = "Placeholder: #protagName# thought about #questItem#."
+    scn.origin = qq.getReminder()
 
     node.storyVisited = True
 
@@ -706,6 +719,7 @@ def generateCombatScenes( party, level, node ):
     scn.party = party
 
     scn.desc = "Adventure in " + node.city.name
+    scn.chapterTitle = node.city.name
     scn.origin = placeholder("#protagName# and #aliceName# fought their way through "+node.city.name )
 
     # Simulate the scenes

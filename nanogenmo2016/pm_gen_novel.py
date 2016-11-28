@@ -9,18 +9,6 @@ from pulpmill import *
 
 if __name__=='__main__':
 
-    novel = novel.Novel([])
-    title = novel.genTitle()
-
-    subtitle = novel.genSubtitle()
-    author = novel.genAuthor()
-
-    colorScheme = random.choice( novel.sg.getColorSchemes() )
-
-    cover.genCover( title, author, subtitle,
-                    colorScheme )
-    sys.exit(1)
-
     culture.setupCultures()
 
     # Test generator
@@ -42,6 +30,10 @@ if __name__=='__main__':
     # print novel.title
     # for i in range(20):
     #     print novel.genTitle()
+
+    colorScheme = random.choice( novel.sg.getColorSchemes() )
+
+    novel.coverImage = cover.genCover( novel.title, novel.author, novel.subtitle, colorScheme )
 
     typesetter = typesetter.Typesetter( novel )
     typesetter.typesetNovel( "novel.pdf")
