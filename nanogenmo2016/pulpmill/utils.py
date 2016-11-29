@@ -39,6 +39,9 @@ def title2(s):
             if not p in ["on", "of", "a", "the", "to", 'II', 'III', 'IV']:
                 p = p.capitalize()
 
+            # Hack, always cap words that start a quote
+            if p[0]=='"':
+                p = '"' + p[1:].capitalize()
             s2.append(p)
 
         # Always cap the first word

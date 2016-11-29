@@ -7,7 +7,21 @@ from tracery.modifiers import base_english
 
 from pulpmill import *
 
+def testCover():
+    nn = novel.Novel( [] )
+    title = nn.genTitle()
+    author = nn.genAuthor()
+    subtitle = nn.genSubtitle()
+
+    colorScheme = random.choice( nn.sg.getColorSchemes() )
+    novel.coverImage = cover.genCover( title, author, subtitle, colorScheme )
+
+    sys.exit(1)
+
+
 if __name__=='__main__':
+
+    #testCover()
 
     culture.setupCultures()
 

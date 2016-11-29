@@ -101,6 +101,21 @@ COVER_TEMPLATES = [
         "title_rect" : ( 17, 85, 603, 179),
         "image_rect" : ( 27, 372, 585, 610 ),
         "subtitle_rect" : ( 14, 321, 603, 50 )
+    },
+    {
+        # Modern, "When Gravity Fails" style
+        "overlay" : None,
+        "mask" : None,
+        "border" : "border_tor.png",
+        "titleBorder" : False,
+        "authorBorder" : False,
+        "authorColorMatch" : True,
+        "tintImage" : True,
+        # "subtitleColor" : ( 41, 38, 29 ),
+        "author_rect" : ( 21, 954, 595, 68 ),
+        "title_rect" : ( 21, 395, 595, 120),
+        "image_rect" : (0, 520, 640, 415 ),
+        "subtitle_rect" : ( 206, 150, 238, 87 )
     }
 ]
 
@@ -328,6 +343,9 @@ def hex_to_rgb(value):
 def lerp( a, b, t ):
     return (1.0-t)*a + t*b
 
+def valueForColor( p ):
+    return (0.2126*p[0] + 0.7152*p[1] + 0.0722*p[2]) / 255.0
+
 def applyGradient( image, color1, color2 ):
 
     print color1, color2
@@ -335,13 +353,18 @@ def applyGradient( image, color1, color2 ):
         for i in xrange(image.size[0]):
             p = image.getpixel( (i,j))
 
-            if (p[3] > 0):
-                val = (0.2126*p[0] + 0.7152*p[1] + 0.0722*p[2]) / 255.0
+            if len(p)<=3:
+                alpha = 255
+            else:
+                alpha = p[3]
+
+            if (alpha > 0):
+                val = valueForColor(p)
 
                 result = ( int(lerp(color1[0], color2[0], val)),
                             int(lerp(color1[1], color2[1], val)),
                             int(lerp(color1[2], color2[2], val)),
-                            p[3] )
+                            alpha )
                 image.putpixel( (i,j), result )
 
 
@@ -381,6 +404,20 @@ def genCover( title, author, subtitle, colorScheme ):
     artImage = Image.open( os.path.join( "covers", "artwork", artinfo['src']))
     artScaled = resize_cover( artImage, artsize )
 
+    gradientColor1 = hex_to_rgb(colorScheme[1])
+    gradientColor2 = hex_to_rgb(colorScheme[3])
+
+    # swap so it's always lighter to darker
+    if valueForColor(gradientColor1) > valueForColor(gradientColor2):
+        gradientColor2, gradientColor1 = gradientColor1, gradientColor2
+
+    if template.get('tintImage', False ):
+        applyGradient( artScaled, gradientColor1, gradientColor2 )
+
+        #use different colors for border
+        #gradientColor1 = hex_to_rgb(colorScheme[4])
+        #gradientColor2 = hex_to_rgb(colorScheme[0])
+
     if template.get('mask',None):
         coverImage1 = coverImage.copy()
         coverImage1.paste( artScaled, template['image_rect'][:2] )
@@ -397,8 +434,7 @@ def genCover( title, author, subtitle, colorScheme ):
     if template['border']:
         coverBorder = Image.open( os.path.join( "covers", "templates", template['border']))
 
-        applyGradient( coverBorder, hex_to_rgb(colorScheme[2]),
-                       hex_to_rgb(colorScheme[3]) )
+        applyGradient( coverBorder, gradientColor1, gradientColor2 )
 
         coverImage.paste( coverBorder, mask=coverBorder  )
 
