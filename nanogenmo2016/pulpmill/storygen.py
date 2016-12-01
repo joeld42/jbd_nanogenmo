@@ -192,19 +192,23 @@ class StoryGen(object):
                                   '#purple.capitalize# clouds hung #in_the_distance#.',
                                   'The #weather_adj# air looked #purple#.'
                                   ],
+                'humble' : [ 'humble', 'regular', 'skilled', 'apprentice', 'practiced'],
 
                 # Misc
                 'said' : ['said', 'cried', 'yelled', 'exclaimed', 'whispered', 'suggested', 'whimpered'],
-                'silly_exclaim' : [ "Whatever!", "Oh Hells", "Yipes", "Why not?", "Zoinks", "AaaAaaaaaAA",
-                                    "Holy Guacamole", "Oh Fudge it!"],
+                'silly_exclaim' : [ "Yeargh!", "Oh Hells", "Yipes", "Why not?", "For Glory!", "AaaAaaaaaAA",
+                                    "Victory!", "Oh Fudge it!"],
+                'daytime' : ['morning', 'evening', 'afternoon' ],
 
                 # Deep Thoughts
                 'wondered' : ['wondered about', 'pondered', 'considered', 'thought about'],
                 'the_future' : [ 'the future', '#protagTheir# future', 'what was coming', '#protagTheir# next steps',
                                  'all that had happened', '#protagTheir# journey', 'the #weather_air#',
                                  '#protagTheir# home back in #protagHome#', 'a #critter#',
-                                 '#protagTheir# simple life as a #protagJob#. That was gone now..'
+                                 '#protagJobTask# back in #protagHome#. #that_was_gone#'
+                                 '#protagTheir# simple life as a #protagJob#. #that_was_gone#'
                                  ],
+                'that_was_gone' : [ "", "That was gone now...", "Those days were over.", "That life was just a memory now."],
                 'the_feels' : [ "happy", "sad", "wistful", "forlorn", "confused", "good", "foul" ],
                 'it_gave_feels' : [
                     "it reminded #protagThem# of #protagHome#.",

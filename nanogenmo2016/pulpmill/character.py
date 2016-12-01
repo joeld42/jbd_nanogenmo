@@ -81,6 +81,7 @@ def setupRpgClasses():
                          {
                              'attack' : [ "#ROLEName# struck with #ROLETheir# #weapon#",
                                           "#ROLEName# draw upon the power of nature with #ROLETheir# #weapon#",
+                                          "#ROLEName# drew power from the #magic_nature#"
                                           "The spirits of the forest inhabited #ROLEName#'s #weapon#",
                                           "#ROLEName# cast entangle, and brambles grew to cover #monsterName#"
                                           ],
@@ -88,29 +89,57 @@ def setupRpgClasses():
                          })
     rpgClasses.append(cc)
 
-    # cc = CharacterClass( 'Fighter')
-    # rpgClasses.append(cc)
-    #
-    # cc = CharacterClass( 'Mage')
-    # rpgClasses.append(cc)
-    #
-    # cc = CharacterClass( 'Monk')
-    # rpgClasses.append(cc)
-    #
-    # cc = CharacterClass( 'Paladin')
-    # rpgClasses.append(cc)
-    #
-    # cc = CharacterClass( 'Ranger')
-    # rpgClasses.append(cc)
-    #
-    # cc = CharacterClass( 'Thief')
-    # rpgClasses.append(cc)
-    #
-    # cc = CharacterClass( 'Witch')
-    # rpgClasses.append(cc)
-    #
-    # cc = CharacterClass( 'Elementalist')
-    # rpgClasses.append(cc)
+    cc = CharacterClass( 'Fighter', [ "sword", "axe", "longsword", "broadsword", "short sword" ],
+                         {
+                             'attack' : [ "#ROLEName# slashed with #ROLETheir# #weapon#",
+                                          "#ROLEName# executed a practiced move with #ROLETheir# #weapon#",
+                                          "#ROLEName#'s #weapon# flashed in the #weather_air#",
+                                          "#ROLEName# struck at the #monsterName#",
+                                          "#ROLEName#'s #weapon# swung at #monsterName#"
+                                          ],
+                             'block'  : ['#ROLEName# blocked it with #ROLETheir# bare hands.']
+                         })
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Mage', [ "staff", "amulet", "fingers" ],
+                         {
+                             'combatElement' : ['fire', 'steam', 'ice', 'lightning'],
+                             'attackSpell' : ['Magic Missle', 'Fireball', 'Lighting', 'Force Lightning',
+                                              'Fury of #combatElement.capitalize#', 'Burning Hands',
+                                              'Flaming Sphere', 'Shatter'],
+                             'attack' : [ "#combatElement.capitalize# flew from #ROLEName#'s #weapon#",
+                                          "#ROLEName# waved #ROLETheir# #weapon# and #combatElement# materialized around #monsterName#",
+                                          "#ROLEName# cast #attackSpell#",
+                                          "#ROLEName# cast #attackSpell# and #combatElement# blazed from #ROLETheir# #weapon#"
+                                          '#ROLEName#\'s mana was weak. #ROLEThey.capitalize# #said#, "#silly_exclaim#", and smacked #monsterName# with #ROLETheir# #weapon#',
+                                          ],
+                             'block'  : ['#ROLEName# blocked it with #ROLETheir# bare hands.']
+                         })
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Ranger',  [ "crossbow", "shortbow", "longbow", "bow", "elven bow" ],
+                         {
+                             'attack' : [ '#ROLEName# took aim with #ROLETheir# #weapon# and loosed an arrow',
+                                          '#ROLEName# ducked up from behind a #natureThing# and got off a shot from #ROLETheir# #weapon#',
+                                          '#ROLEName# shot an arrow from #ROLETheir# #weapon#',
+                                          '#ROLEName# aimed at #monsterName#\'s #m_part#',
+                                          ],
+                             'block'  : ['#ROLEName# blocked it with #ROLETheir# bare hands.']
+                         })
+    rpgClasses.append(cc)
+
+    cc = CharacterClass( 'Thief',  [ "dagger", "shiv", "foil", "barb" ],
+                         {
+                             'attack' : [ '#ROLEName# snuck behind #monsterName# and stabbed at a vertebrae',
+                                          '#ROLEName# deftly snapped #ROLETheir# at #monsterName#\'s ribs',
+                                          '#ROLEName# attempted backstab',
+                                          '#ROLEName# attempted to backstab #monsterName#'
+                                          '#ROLEName# gutted #monsterName# with a #weapon#'
+                                          ],
+                             'block'  : ['#ROLEName# blocked it with #ROLETheir# bare hands.']
+                         })
+    rpgClasses.append(cc)
+
 
 
     return rpgClasses
@@ -139,7 +168,24 @@ class Character( object ):
         if self.hometown.port:
             jobs += [ 'fisherman', 'sailor', 'dockworker' ]
 
+        jobTasks= {
+            'baker' : ['kneading dough', 'heating up the oven for a loaf of bread',
+                       'folding pastry', 'grinding wheat', 'mixing frosting'],
+            'farmer' : [ 'digging a furrow', 'shucking corn', 'sorting seeds',
+                         'shearing a sheep', 'feeding cattle', 'planting #kfruit#'],
+            'soldier' : [ 'marching with comrades', 'practicing swordfighting',
+                          'building an encampment', 'digging ditches'],
+            'carpenter' : [ 'sanding planks', 'cutting joints into timber',
+                            'planing rough lumber', 'driving nails into timber'],
+            'fisherman' : [ 'gutting perch', 'filetting halibut', 'repairing nets',
+                            'floating idly in the sunshine', 'building lures' ],
+            'sailor' : [ 'tying knots', 'climbing the rigging', "pacing the fo'c'sle",
+                         'reading a star chart', 'taking a sounding for depth'],
+            'dockworker' : [ 'loading crates', 'adjusting rigging', 'unloading a cargo barge' ]
+        }
+
         self.job = random.choice( jobs )
+        self.jobTasks = jobTasks[ self.job ]
 
         self.rules = []
 
@@ -168,6 +214,7 @@ class Character( object ):
             'ROLEHome' : self.hometown.name,
             'ROLEKingdom' : self.homenode.kingdom.name,
             'ROLEJob' : self.job,
+            'ROLEJobTask' : self.jobTasks
         }
 
         charRules.update (self.rpgClass.getCharClassRules() )

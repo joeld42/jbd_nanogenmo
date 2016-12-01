@@ -18,7 +18,7 @@ from pulpmill import world, utils, character, combat
 #  Add Character        [X]       [ ]
 #  Encounter Outdoor    [ ]       [ ]
 #  Dungeon Desc         [X]       [ ]
-#  Dungeon Filler       [ ]       [ ]
+#  Dungeon Filler       [X]       [ ]
 #  Dialogue Filler      [X]       [ ]
 #  Quest: Setup         [X]       [ ]
 #  Quest: Resolve       [X]       [ ]
@@ -29,7 +29,10 @@ def placeholder( text ):
     """
     Adds punctuation. Also a useful place to check if I have placeholders in the future.
     """
-    return text+"."
+    if text[-1] != '.':
+        return text+"."
+    else:
+        return text
 
 def first_lower(s):
     if len(s) == 0:
@@ -84,7 +87,7 @@ class Scene(object):
 
         self.wordCount = 0
 
-        self.sceneRules = []
+        self.sceneRules = {}
         self.newChars = []
 
         # Some special flags
@@ -119,6 +122,10 @@ class Scene(object):
 
     def addParagraph(self, pptext ):
 
+        # hack fix punctuation
+        # if pptext.endswith['..']:
+        #     pptext[-2:] = '.'
+
         self.checkPPText( pptext )
 
         self.storyText.append( pptext )
@@ -127,12 +134,6 @@ class Scene(object):
     def buildSceneRules(self, sg):
 
         commonRules = sg.getCommonRules( self.node )
-
-        # Base scene just uses origin rule, but complex scenes might
-        # mix up more than one rule set or sequence
-        self.sceneRules = {
-             'origin' : self.origin
-         }
 
         # Build chars from party and newChars
         protag = self.party[0]
@@ -185,6 +186,8 @@ class Scene(object):
         grammar.add_modifiers( base_english )
 
         try:
+            print "---"
+            print self.origin
             pp = grammar.flatten( "#origin#" )
             self.addParagraph( pp )
 
@@ -261,7 +264,21 @@ def sceneIncitingIncident( node, protag ):
     scn.incitingIncident = True
 
     #TEST -- Replace with inciting scene from quest
-    scn.origin = placeholder("#protagName#'s life was about to change in ways #protagThey# never expected")
+    #scn.origin = placeholder("#protagName#'s life was about to change in ways #protagThey# never expected")
+
+    # Oh well, this was supposed to be the setup for the epic quest but didnt
+    # get to that...
+    scn.sceneRules = {
+        "foreshadow" : [
+            "#protagName#'s life was about to change in ways #protagThey# never expected.",
+            "#moodLighting#. #weather_sentence# A storm was coming.",
+            'This was the last #daytime# #protagName# would spend #protagJobTask#.',
+            'Change was on the #weather_air#.'
+        ]
+    }
+    scn.origin = '#foreshadow#'
+
+
     return [ scn ]
 
 # -------------------------------------------------------------
@@ -276,7 +293,15 @@ def sceneNormalLife( node, char ):
     scn.node = node
     scn.desc = char.name + " does normal stuff in " + node.city.name
 
-    scn.origin = placeholder("#protagName# was a humble #protagJob# in #protagHome#")
+    scn.sceneRules = {
+        'scnDidStuff' : [ '#protagName# wandered by the #propBuilding#',
+                          '#protagThey.capitalize# spent the #daytime# #protagJobTask#',
+                          '#protagThey.capitalize# busied #protagThem#self #protagJobTask#',
+                          '#protagName# thought to visit a #propBuilding#, but was busy #protagJobTask#' ],
+    }
+
+    scn.origin = placeholder("#protagName# was a #humble# #protagJob# in #protagHome#. #scnDidStuff#. "+
+                             "#moodLighting.capitalize#. #scnDidStuff# #it_gave_feels#")
 
     scenes.append( scn )
 

@@ -466,7 +466,7 @@ class World(object):
         # Path gen is kind of wonky, sometimes it takes a long time and/or
         # might not finish. For faster iteration during development the
         # fast, fake path will just make a random path ignoring connectivity
-        doFastFakePage = False
+        doFastFakePage = True
         if not doFastFakePage:
 
             retryCount = 0
