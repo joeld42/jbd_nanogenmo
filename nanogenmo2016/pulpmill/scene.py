@@ -10,24 +10,20 @@ from pulpmill import world, utils, character, combat
 
 # TODO List for scene types
 # Scene Type        Placeholder  Text
-# ------------------------------------
-#  Place Desc           [X]       [X]
-#  Normal Life          [X]       [ ]
-#  Epic: Incit. Inc.    [X]       [ ]
-#  Sea Voyage           [X]       [ ]
-#  Add Character        [X]       [ ]
-#  Encounter Outdoor    [ ]       [ ]
-#  Dungeon Desc         [X]       [ ]
-#  Dungeon Filler       [X]       [ ]
-#  Dialogue Filler      [X]       [ ]
-#  Quest: Setup         [X]       [ ]
-#  Quest: Resolve       [X]       [ ]
-#  Epic: Return         [ ]       [ ]
 
 
 def placeholder( text ):
     """
     Adds punctuation. Also a useful place to check if I have placeholders in the future.
+    """
+    if text[-1] != '.':
+        return text+"."
+    else:
+        return text
+
+def punctuate( text ):
+    """
+    Adds punctuation.
     """
     if text[-1] != '.':
         return text+"."
@@ -300,7 +296,7 @@ def sceneNormalLife( node, char ):
                           '#protagName# thought to visit a #propBuilding#, but was busy #protagJobTask#' ],
     }
 
-    scn.origin = placeholder("#protagName# was a #humble# #protagJob# in #protagHome#. #scnDidStuff#. "+
+    scn.origin = punctuate("#protagName# was a #humble# #protagJob# in #protagHome#. #scnDidStuff#. "+
                              "#moodLighting.capitalize#. #scnDidStuff# #it_gave_feels#")
 
     scenes.append( scn )
@@ -428,18 +424,164 @@ def sceneSeaVoyage( node, arc ):
 
     scenes = []
 
+    # Should do this better but this will do for now
+    BOAT_RULES = {
+        "boatname" : [ "the #boatname1#", "the #seaboatname#" ],
+        "seaboatname" : ["#boatname1# of the sea", "#boatname1# on the waves",
+                         "#boatname1# of the water"],
+        "boatname1" : [ '#conceptual#','#creature#', '#girlfriend#' ],
+        "adj" : [ 'lost', 'new', 'newfound', "sailor's", 'enchanted', 'bonnie' ],
+        "conceptual" : [ '#concept#', '#adj# #concept#'],
+        "concept" : ['freedom', 'hope', 'commerce', 'tradewinds',
+                    'delight', 'remorse', 'spice', 'wind',
+                    'happiness', 'compass rose', 'compass', 'mutineer',
+                     'windlass', ],
+        'creature' : ['dolphin', 'whale', 'sunfish', 'bonefish', 'jellyfish',
+                      'narwhal'],
+        'girlfriend' : [ '#adj# #girlfriend1#', '#girlfriend1#'],
+        'girlfriend1' : ['mermaid', 'siren', 'enchantress', 'lady', 'queen', 'princess', 'lass',
+                        'manatee', 'narwhal']
+
+    }
+    grammar = tracery.Grammar( BOAT_RULES )
+    grammar.add_modifiers( base_english )
+
+    boatName = grammar.flatten( "#boatname#")
+    boatName = boatName.title()
+
+    captainName  = node.kingdom.culture.genContinentName()
+    captainThey = random.choice( ['he', 'she'] )
+
+    commonSeaRules = {
+        "startCity" : arc.a.city.name,
+        "destCity" : arc.b.city.name,
+        "boatName" : boatName,
+        "captainName" : captainName,
+        "captainThey" : captainThey,
+        "wavey" : [ "calm", "choppy", "rough", "stormy", "churning" ],
+    }
+
     if utils.randomChance(0.3):
         scn = Scene()
         scn.desc = "Finding passage in " + node.city.name
         scn.node = node
-        scn.chapterTitle = "Find a boat" # name of the boat?
-        scn.origin = placeholder("#protagName# had some trouble finding a boat to "+destNode.city.name )
+        scn.chapterTitle = boatName
+
+        scn.sceneRules.update( commonSeaRules )
+
+        findboat_rules = {
+            "hear_about_boat" : [
+                "There was notice board at the #place# that listed shipping schedules.",
+                "#aliceName# bought a round for the sailors at the local tavern and asked about ships.",
+                "#protagName# made friends with a local #portJob# who knew the comings and goings of the port.",
+                "#protagName# met a #portJob# and got a lead on a ship sailing to #destCity#.",
+            ],
+
+            "boat_schedule" : [
+                "#boatName# was set to sail to #destCity# #soon#.",
+                "A #boatType# named #boatName# was sailing to #destCity#.",
+                "#soon.capitalize#, #boatName# was set to sail to #destCity#.",
+                "#boatName# was the only #boatType# from #startCity# to #destCity# this moon."
+            ],
+
+            "captain_desc" : [
+                "The captain was a #capt_desc# #sea_dog# named #captainName#.",
+                'The #boatName# was piloted by a #capt_desc# #sea_dog# named #captainName#.'
+            ],
+
+            "capt_problem" : [
+                "#captainName# had no interest in letting them on #boatName#.",
+                "But #boatName# was at capacity, and had no room for adventureres.",
+                '"Sorry," said #captainName#, "but #boatName# isn\'t a passenger vessel."',
+                'There should have been plenty of space on #boatName#, but #captainName# said it was full. #aliceName# guessed that it was a smuggler.',
+                '"I\'m looking for sailors, not a #protagClass#," said #captainName#, "find some other boat".',
+                '"Sod off," said #captainName#, "#boatName#\'s not for landlubbers like ya."'
+            ],
+
+            "kill_time" : [
+                "#protagName# wandered the streets of #startCity#. #moodLighting#.",
+                '#protagName# walked the docks and pondered. #protagThey# scanned the #wavey# horizon.',
+                '#protagName# visited a tavern and considered #protagTheir# options.',
+                '#protagName# mused, visited a street market and ate some fried #critter#. #moodLighting#.'
+            ],
+
+            "resolve" : [
+                "Then, #aliceName# saw #captainName# in a tavern. #aliceThey# bought the #capt_desc# captain enough "+
+                "whiskey to change their mind, even if they had a little trouble recalling it the next day.",
+
+                "#aliceName# followed a couple of sailors from #boatName# into an alley. The next day, #captainName# "+
+                "found themselves short on crew, and had little choice but to take on the party if they agreed to help sail.",
+            ],
+
+            "portJob" : [ "fisherman", "sailor", "dockworker"],
+            "place" : [ "tavern", "docks", "fish market", "quay", "pier"],
+            "boatType" : ['barque', 'schooner', 'scow', 'galley', 'longboat', 'caravel'],
+            "capt_desc" : [ 'salty', 'grumpy', 'prancing', 'gruff', 'bitter', 'grizzled' ],
+            "sea_dog" : ['sea dog', 'mariner', 'freebooter', 'pirate', 'mercenary'],
+            "soon" : ['that evening', 'at dawn', 'tomorrow', 'in a few days',
+                      'at midnight', 'at noon', 'on wednesday'],
+
+        }
+        scn.sceneRules.update( findboat_rules )
+
+        scn.origin = "#hear_about_boat# #boat_schedule# #captain_desc#//#capt_problem# #kill_time# #resolve#"
         scenes.append( scn )
+
 
     scn = Scene()
     scn.node = node
     scn.desc = "Voyage to " + destNode.city.name
-    scn.origin = placeholder( "Stuff happened on the boat ride to "+destNode.city.name )
+    scn.chapterTitle = random.choice(['Voyage to $PP', 'Sailing to $PP', 'The Open Ocean',
+                                      'Across the Vast Sea', 'A Trip to $PP', 'An Ocean Voyage',
+                                      'A Sea Voyage'])
+    scn.chapterTitle = scn.chapterTitle.replace( '$PP', destNode.city.name )
+
+    scn.sceneRules.update( commonSeaRules )
+
+
+    voyageRules = {
+
+        "voyage_origin" : [
+            "#sea_desc# #sea_detail# #voyage_overview#"
+        ],
+
+        "sea_desc" : [
+            "The #weather_adj# sea was #wavey#.",
+            "The waves were #wavey# and the air was #weather_adj#."
+        ],
+
+        "sea_detail" : [
+            "Seagulls circled #boatName# and #aliceName# fretted that they might poop on #protagThem#.",
+            "#boatName# was followed for a while by a pod of dolphins.",
+            "The air was pleasent but there were #bug.s# in #protagName#'s cabin.",
+            "They saw a humpback whale breach the #weather_adj# waves."
+        ],
+
+        "voyage_overview" : [
+            "#v_uneventful#", "#v_good#", "#v_bad#"
+        ],
+
+        "v_uneventful" : [
+            "The voyage to #destCity# was uneventful.",
+            "The sail to #destCity# was a much needed rest for the party.",
+            "Much happened on the voyage to #destCity#, but that is a tale for another time.",
+            "Not much happened on the voyage to #destCity#."
+        ],
+
+        "v_good" : [
+            "#aliceName# spent the trip to #destCity# pilfering grog from the #boatName#'s crew.",
+            "#protagName# learned the fisherman's trick of baiting with spoiled #kfruit# to catch #fish#.",
+            "On the way to #destCity#, #protagName# climbed the #boatName#'s mast and surveyed the vast ocean. #moodLighting#."
+        ],
+
+        "v_bad" : [
+            "#aliceName# never found #aliceTheir# sea legs on the whole trip to #destCity#.",
+            "#aliceName# spend most of #aliceTheir# time on the voyage to #destCity# puking over the gunwales.",
+            "On the voyage to #destCity#, #protagName# lost most of #protagTheir# gold playing dice with the crew."
+        ]
+    }
+    scn.sceneRules.update( voyageRules )
+    scn.origin = "#voyage_origin#"
 
     scenes.append( scn )
 
@@ -447,7 +589,19 @@ def sceneSeaVoyage( node, arc ):
         scn = Scene()
         scn.desc = "Arriving in " + node.city.name
         scn.node = node
-        scn.orign = placeholder( "#protagName# arrived in "+destNode.city.name+" and #it_gave_feels#")
+        scn.sceneRules.update( commonSeaRules )
+
+        arrive_rules = {
+            "arrive_origin" : [ "#protagName# arrived in #destCity# and #it_gave_feels#.",
+                                "It was #daytime# when they reached the docks in #destCity#.",
+                                "#moodLighting# as they sailed into the harbor at #destCity#.",
+                                "It seemed as if weeks had passed since they left #startCity#. The harbor in #destCity# was #wavey#."
+                                ]
+
+        }
+        scn.sceneRules.update( arrive_rules )
+
+        scn.origin = "#arrive_origin#"
         scenes.append( scn )
 
     return scenes

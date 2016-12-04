@@ -25,7 +25,7 @@ class Quest(object):
         remindPhrases = [
             "#protagName# thought about the #questItem#, and all the trouble it had brought into "+
             "#protagTheir# life. Soon, this would be over.",
-            "#protagName# thought about the #questItem#. #protagThey# was sure they would reach #destCity#."
+            "#protagName# thought about the #questItem#. #protagThey.capitalize# was sure they would reach #destCity#."
         ]
 
         if self.questType==QuestType_DESTROY_ITEM:

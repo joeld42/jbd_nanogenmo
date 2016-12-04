@@ -199,6 +199,7 @@ class StoryGen(object):
                 'silly_exclaim' : [ "Yeargh!", "Oh Hells", "Yipes", "Why not?", "For Glory!", "AaaAaaaaaAA",
                                     "Victory!", "Oh Fudge it!"],
                 'daytime' : ['morning', 'evening', 'afternoon' ],
+                'fish' : ['halibut', 'tuna', 'whitefish', 'scalefish', 'bonefish'],
 
                 # Deep Thoughts
                 'wondered' : ['wondered about', 'pondered', 'considered', 'thought about'],

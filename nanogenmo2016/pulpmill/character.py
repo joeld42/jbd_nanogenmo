@@ -51,6 +51,8 @@ def setupRpgClasses():
 
     rpgClasses = []
 
+    # NOTE: blocks aren't yet used so they're not filled out
+
     cc = CharacterClass( 'Barbarian', ['battle-axe', 'great sword', 'halbard', 'pole-arm' ],
                          {
                              'attack' : [ '#ROLEName# swung #ROLETheir# #weapon# at #monsterName#'],
