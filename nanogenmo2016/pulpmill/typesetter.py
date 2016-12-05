@@ -282,6 +282,7 @@ class Typesetter(FPDF):
     def emitScene(self, scene ):
 
         self.ln( 1 )
+
         for ppmain in scene.storyText:
 
             ppsplit = ppmain.split('//')
@@ -335,6 +336,10 @@ class Typesetter(FPDF):
                 chapterWords = 0
                 currTitles = []
 
+        # Append any leftover scenes
+        if len(currScenes):
+            lastChapterTitle, lastChapterScenes = chapters[-1]
+            chapters[-1] = (lastChapterTitle, lastChapterScenes + currScenes )
 
         for chapterNum, chapInfo in enumerate(chapters):
             # print chapterNum

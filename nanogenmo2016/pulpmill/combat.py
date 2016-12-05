@@ -23,7 +23,7 @@ MONSTER_DICT = {
     },
 
     "skeleton" : {
-        "name" : [ "skeleton" ],
+        "name" : [ "skeleton", "skelley", "bonewalker", "mummy" ],
         "tags" : [ "humanoid" ],
         "leader" : [ "Lich", "Skeleton King"],
         "rules": {
@@ -32,7 +32,63 @@ MONSTER_DICT = {
             "m_sound" : [ "chittered", "moaned", "shrieked", "clattered" ],
             "m_part" : [ "head", "skull", "ribcage", "leg", "femur", "spine"]
         },
-    }
+    },
+
+    "lizards" : {
+        "name" : [ "basilisk", "giant lizard", "chimera", "skink" ],
+        "tags" : [ "lizard" ],
+        "leader" : [ "Dragon", "Bone Dragon", "Drake", "Dragolisk"],
+        "rules": {
+            "m_moved" : [ "skittered", "slunk", "slithered", "skated", "ran" ],
+            "m_attacked" : [ "struck", "stabbed", "swung", "bit", "clawed" ],
+            "m_sound" : [ "chittered", "moaned", "shrieked", "clattered", "roared", "hissed" ],
+            "m_part" : [ "head", "skull", "ribcage", "leg", "femur", "spine", "tail"]
+        },
+    },
+
+    "zombies" : {
+        "name" : [ "zombie", "ghoul", "ghast", "white walker" ],
+        "tags" : [ "humanoid" ],
+        "leader" : [ "Zombie Lord", "Necromancer"],
+        "rules": {
+            "m_moved" : HUMANOID_MOVEMENTS + [ "slouched", "staggered", "slunk", "trundled", "shuffled" ],
+            "m_attacked" : [ "struck", "stabbed", "swung", "grabbed", ],
+            "m_sound" : [ "moaned", "shrieked", "clattered", "splorched"],
+            "m_part" : [ "head", "skull", "viscera", "exposed bone", "ribcage", "leg", "femur", "spine", "knee"]
+        },
+    },
+
+    "jellies" : {
+        "name" : [ "ooze", "gelatious cube", "slime", "jelly" ],
+        "tags" : [ "jelly" ],
+        "leader" : [ "Great Jelly", "Giant Slime", "Slimelord", "Ur-Ooze"],
+        "rules": {
+            "m_moved" : [ "splorched", "oozed", "slid", "blobbed", "wobbled" ],
+            "m_attacked" : [ "spat at", "puked", "squirted", "slimed" ],
+            "m_sound" : [ "squelched", "squanched", "blorped", "oozed", "farted" ],
+            "m_part" : [ "ooze", "slime", "goo", "edge", "surface", "outside", "middle "]
+        },
+    },
+
+    "giantbugs" : {
+        "name" : [  "giant beetle", "spider", "horse-sized centipede" ],
+        "leader" : [ "Shelob", "Bugomancer" ],
+        "tags" : [ "insect"],
+        "rules": {
+            "m_moved" : [ "flew", "skittered", "crawled", "scurried"],
+            "m_attacked" : [ "flew at", "stung", "chomped", "bit", "poked", "lashed out"],
+            "m_sound" : [ "chittered", "trilled" ],
+            "m_part" : [ "head", "eyes", "carapice", "tail", "leg", "segment", "thorax"]
+        },
+    },
+
+
+
+
+
+
+
+
 
 }
 

@@ -272,7 +272,7 @@ took the offered item.//"This is the #questItem#", the #questGiver# #said#. "It 
  resting on a web of bones and tight-stretched skin wrapped in rusting
  armour, was the #questItem#. It looked untouched by time.//
  #aliceName# hesitated.//
- "This is no time to be squeamish", said #protagName#, and #protagThey
+ "This is no time to be squeamish", said #protagName#, and #protagThey#
  reached into the grave and drew out the #questItem#. It glowed softly
  with a mystical energy.
 """

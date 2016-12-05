@@ -182,8 +182,6 @@ class Scene(object):
         grammar.add_modifiers( base_english )
 
         try:
-            print "---"
-            print self.origin
             pp = grammar.flatten( "#origin#" )
             self.addParagraph( pp )
 
