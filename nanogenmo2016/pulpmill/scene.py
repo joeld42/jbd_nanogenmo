@@ -234,14 +234,35 @@ class SceneAddChar( Scene ):
         template = []
 
         # Setup
-        sentences = [
-            ( 0.5, [ '#protagName# visited a tavern.',
-                     '#protagName# was #the_feels#. #protagThey.capitalize# wandered into a garden full of #kfruit.s#.'
-                     ])
-        ]
-        template += utils.addSentencesWithChances( sentences )
+        template.append( random.choice([ '#protagName# visited a tavern.',
+                      '#protagName# was #the_feels#. #protagThey.capitalize# wandered into a garden full of #kfruit.s#.',
+                      '#protagName# heard an animated conversation coming from a #propBuilding# and peeked inside.',
+                      '#protagName# was hungry and stopped into an inn for some food.',
+                      '#cityname# was hardly a cosmopolitan town, but it had a coffee shop.',
+                     ]))
 
-        template.append( 'A #aliceClass# joined the party. #aliceTheir.capitalize# name was #aliceName#.')
+        template.append( random.choice( ['A #aliceClass# was there, lurking in the shadows.',
+                          "#protagName# couldn't help but notice a #aliceClass# nearby.",
+                          "There was a #aliceClass# sipping #beverage#.",
+                          ]))
+
+        template.append( random.choice([
+            'The #aliceClass# noticed #protagName#. "Hello there," the #aliceClass# said, '
+            '"You look like you could use a #aliceClass# in your group, and I could use some'
+            ' adventure. I\'m #aliceName#."',
+
+            '#protagName# strode up to the stranger. "You have the look of an #aliceClass#,"'
+            'said #protagName#, "we could use someone like you in our party."//"I\'m #aliceName#,"'
+            '#aliceThey# replied, "maybe you\'re right. I\'ve been in this town too long."',
+
+            'Suddenly, a brawl broke out among the patrons. A mug of #beverage# splashed #protagName# '
+            'in the face. At the center, a flailing #aliceClass# was throwing loose punches. #protagName# '
+            'decided to help #aliceThem# out.//#protagThey# extricated #aliceThem# from the fight and after '
+            'a few minutes, the #aliceClass# said, "Thanks for your help back there. I\'m #aliceName#." //'
+            'They chatted for the rest of the afternoon, and soon it was clear that #aliceName# would be '
+            'joining them for the rest of their journey.'
+        ]))
+
 
         self.origin = string.join( template, ' ')
 

@@ -23,11 +23,11 @@ TWITTER_FOLKS = [
 
 ]
 
-NAME_RULES = {
-    "origin" : ['#twitter#', '#markov#', '#markov#', '#markov#', '#markov#', '#markov#' ],
-    "twitter" : TWITTER_FOLKS,
-    "markov" : ['$AA']
-}
+# NAME_RULES = {
+#     "origin" : ['#twitter#', '#markov#', '#markov#', '#markov#', '#markov#', '#markov#' ],
+#     "twitter" : TWITTER_FOLKS,
+#     "markov" : ['$AA']
+# }
 
 class CharacterClass( object ):
 
@@ -162,9 +162,10 @@ class Character( object ):
 
         self.rpgClass = random.choice( Character._rpgClasses )
 
-        grammar = tracery.Grammar( NAME_RULES )
-        grammar.add_modifiers( base_english )
-        name = grammar.flatten( "#origin#")
+        if utils.randomChance(0.1):
+            name = random.choice( TWITTER_FOLKS )
+        else:
+            name = '$AA'
 
         jobs = [ 'baker', 'farmer', 'soldier', 'carpenter' ]
         if self.hometown.port:

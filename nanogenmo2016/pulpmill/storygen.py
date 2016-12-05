@@ -200,6 +200,7 @@ class StoryGen(object):
                                     "Victory!", "Oh Fudge it!"],
                 'daytime' : ['morning', 'evening', 'afternoon' ],
                 'fish' : ['halibut', 'tuna', 'whitefish', 'scalefish', 'bonefish'],
+                'beverage' : ['tea', 'a beer', 'coffee', 'grog', '#kfruit# juice'],
 
                 # Deep Thoughts
                 'wondered' : ['wondered about', 'pondered', 'considered', 'thought about'],

@@ -195,7 +195,7 @@ took the offered item.//"This is the #questItem#", the #questGiver# #said#. "It 
   I gained and lost my fortune. But it is an evil thing. Please, I beg of you,
   take it to #destCity# and there you will find a well so deep as to have no
   bottom. Drop it into the well and the world will be free of it. But be careful,
-  as long as you carry it ill luck will befall you." #questGiverAction#
+  as long as you carry it ill luck will befall you." The #questGiver# #questGiverAction#
 """,
 """
  In the deepest part of #destCity#, they reached the well and stared into
