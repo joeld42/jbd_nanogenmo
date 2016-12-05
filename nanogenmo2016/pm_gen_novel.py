@@ -14,7 +14,7 @@ def testCover():
     subtitle = nn.genSubtitle()
 
     colorScheme = random.choice( nn.sg.getColorSchemes() )
-    novel.coverImage = cover.genCover( title, author, subtitle, colorScheme )
+    novel.coverImage,copyright = cover.genCover( title, author, subtitle, colorScheme )
 
     sys.exit(1)
 
@@ -47,7 +47,7 @@ if __name__=='__main__':
 
     colorScheme = random.choice( novel.sg.getColorSchemes() )
 
-    novel.coverImage = cover.genCover( novel.title, novel.author, novel.subtitle, colorScheme )
+    novel.coverImage, novel.artCopyright = cover.genCover( novel.title, novel.author, novel.subtitle, colorScheme )
 
     typesetter = typesetter.Typesetter( novel )
     typesetter.typesetNovel( "novel.pdf")

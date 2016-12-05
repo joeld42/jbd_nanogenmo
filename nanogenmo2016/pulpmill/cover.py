@@ -373,6 +373,12 @@ def applyGradient( image, color1, color2 ):
 
 def genCover( title, author, subtitle, colorScheme ):
 
+    # copyrights = set()
+    # for img in COVER_IMAGES:
+    #     copyrights.add( img['copyright'])
+    # for cp in copyrights:
+    #     print "Cover Art " + cp
+
     booksize = (640, 1038)
 
     titleColor = hex_to_rgb( colorScheme[0])
@@ -478,7 +484,7 @@ def genCover( title, author, subtitle, colorScheme ):
     coverImageName = "cover_pic.png"
     coverImage.save(coverImageName )
 
-    return coverImageName
+    return coverImageName, 'Cover Art ' + artinfo['copyright']
 
 # import cairocffi as cairo
 #

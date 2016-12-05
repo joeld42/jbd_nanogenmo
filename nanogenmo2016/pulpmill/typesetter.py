@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, string
 import random
 import utils
 
@@ -37,6 +37,70 @@ class Typesetter(FPDF):
             # Skipping cover image, just the title
             self.set_font('Arial', 'B', 14)
             self.cell(self.w - (self.l_margin + self.r_margin), 24, self.novel.title, 1, 1, 'C' )
+
+        # Add copyright notice
+        # TODO: add other frontmatter like dedication and other silly stuff
+        self.add_page()
+
+        self.ln(100)
+        self.set_font( 'Times', 'I', 10 )
+
+        self.multi_cell( 0, 5, self.novel.artCopyright )
+        self.ln(4)
+
+
+    # This was a special case to generate the acknowlegements page for the
+    # NaNoGenMo "anthology" novel.
+    def doExtraStuff(self):
+
+        self.add_page()
+
+        self.set_font('Arial', 'B', 14)
+        self.cell(self.w - (self.l_margin + self.r_margin), 24, 'Acknowledgements', 1, 1, 'C' )
+
+        self.set_font( 'Times', '', 10 )
+
+        self.ln(10)
+
+        extraText = [
+
+"""If you still aren't quite sure what the heck you just read, this was
+ an experiment in generative fiction from Joel Davis (@joeld42) as part of
+ #NaNoGenMo 2016. NaNoGenMo is similar to NaNoWriMo, in which you try
+ to generate a 50k novel in a month, but in this case the challenge is
+ to write a computer program that generates 50k words of text.
+""",
+"""Thanks to Darius Kazemi (@dariusk) for setting up NaNoGenMo2016 and for
+his 'corpora' dataset, which was a great help to this project. And also for
+continuing to make inspiring bots and projects that help remind us that there's
+still a lot of wide open spaces to explore in at the overlap of computers and art.
+""",
+"""
+Additional thanks to Kate Compton (@GalaxyKate) for the tremendously useful
+Tracery language, which is heavily used by this project. Also grateful to
+Allison Parrish (@aparrish) for the Python port of Tracery.
+""",
+"""
+Finally, thanks to all my friends in real life, imaginary, and on Twitter,
+who provided inspiration and encouragement.
+""",
+            "Cover Art 'Loch Lomond' by Gustave Dore. (Public Domain)",
+            "Cover Art Bogatyrs (1898) by Viktor Vasnetsov. (Public Domain)",
+            "Cover Art 'Shaman Hut' by David Revoy and Blender Foundation (Creative Commons)",
+            "Cover Art 'Meeting Under the Tree' by David Revoy (Creative Commons)",
+            "Cover Art by David Revoy, used under Creative Commons."
+            "Cover Art 'Elf Markswoman' by Kathrin 'Kitty' Polikeit (GPL)",
+            "Cover Art Frontispiece to 1905 edition of J. Allen St. John's The Face in the Pool (Public Domain)",
+            "Cover Art by Gustave Dore. (Public Domain)",
+            "Cover Art 'Castle of Reflection' by Birgit Anderson Ridderstedt, 1931. Courtesy of Southerly Clubs, Sweden (Public Domain)"
+        ]
+
+        for pp in extraText:
+
+            pp = ' '.join(string.split(pp))
+            self.multi_cell( 0, 5, pp )
+            self.ln(4)
+
 
     # Stupid fpdf can't draw a polygon
     def polygon(self, pnts, style=''):
