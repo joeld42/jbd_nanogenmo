@@ -830,8 +830,9 @@ class SceneQuest( Scene ):
             "questItem" : self.quest.item,
             "startCity" : self.quest.startCity.city.name,
             "destCity" : self.quest.destCity.city.name,
-            "questGiver" : "TODO:questGiver"
         }
+
+        questRules.update( self.quest.questGiverRules )
 
         self.sceneRules.update( questRules )
 

@@ -201,6 +201,10 @@ class Typesetter(FPDF):
                     self.set_draw_color(160, 117, 0)
                 elif arc.arcType == world.TerrainArc_SEA:
                     self.set_draw_color(0, 226, 247)
+
+                    # Don't draw sea arcs
+                    continue
+
                     if maptype != "travel":
                         continue
                 else:
@@ -288,6 +292,7 @@ class Typesetter(FPDF):
 
                 # Remove newlines and extra spaces
                 pp = pp.strip().replace( "\n", " " )
+                pp = ' '.join( pp.split() )
 
                 self.multi_cell( 0, 5, "       " + pp )
 
